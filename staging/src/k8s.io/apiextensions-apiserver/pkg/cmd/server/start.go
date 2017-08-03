@@ -126,7 +126,7 @@ func (o CustomResourceDefinitionsServerOptions) RunCustomResourceDefinitionsServ
 		return err
 	}
 
-	server, err := config.Complete().New(genericapiserver.EmptyDelegate)
+	server, err := config.Complete().New(genericapiserver.EmptyDelegate, stopCh)
 	if err != nil {
 		return err
 	}

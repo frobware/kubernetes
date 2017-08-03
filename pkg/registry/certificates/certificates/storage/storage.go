@@ -34,7 +34,7 @@ type REST struct {
 }
 
 // NewREST returns a registry which will store CertificateSigningRequest in the given helper
-func NewREST(optsGetter generic.RESTOptionsGetter) (*REST, *StatusREST, *ApprovalREST) {
+func NewREST(optsGetter generic.RESTOptionsGetter, stopCh <-chan struct{}) (*REST, *StatusREST, *ApprovalREST) {
 	store := &genericregistry.Store{
 		Copier:            api.Scheme,
 		NewFunc:           func() runtime.Object { return &certificates.CertificateSigningRequest{} },
@@ -48,7 +48,7 @@ func NewREST(optsGetter generic.RESTOptionsGetter) (*REST, *StatusREST, *Approva
 		DeleteStrategy: csrregistry.Strategy,
 	}
 	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: csrregistry.GetAttrs}
-	if err := store.CompleteWithOptions(options); err != nil {
+	if err := store.CompleteWithOptions(options, stopCh); err != nil {
 		panic(err) // TODO: Propagate error up
 	}
 

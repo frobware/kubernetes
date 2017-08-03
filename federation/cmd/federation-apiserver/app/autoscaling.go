@@ -29,9 +29,9 @@ import (
 	hpastorage "k8s.io/kubernetes/pkg/registry/autoscaling/horizontalpodautoscaler/storage"
 )
 
-func installAutoscalingAPIs(g *genericapiserver.GenericAPIServer, optsGetter generic.RESTOptionsGetter, apiResourceConfigSource storage.APIResourceConfigSource) {
+func installAutoscalingAPIs(g *genericapiserver.GenericAPIServer, optsGetter generic.RESTOptionsGetter, apiResourceConfigSource storage.APIResourceConfigSource, stopCh <-chan struct{}) {
 	hpaStorageFn := func() map[string]rest.Storage {
-		hpaStorage, hpaStatusStorage := hpastorage.NewREST(optsGetter)
+		hpaStorage, hpaStatusStorage := hpastorage.NewREST(optsGetter, stopCh)
 		return map[string]rest.Storage{
 			"horizontalpodautoscalers":        hpaStorage,
 			"horizontalpodautoscalers/status": hpaStatusStorage,

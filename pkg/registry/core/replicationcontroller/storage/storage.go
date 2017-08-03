@@ -43,8 +43,8 @@ type ControllerStorage struct {
 	Scale      *ScaleREST
 }
 
-func NewStorage(optsGetter generic.RESTOptionsGetter) ControllerStorage {
-	controllerREST, statusREST := NewREST(optsGetter)
+func NewStorage(optsGetter generic.RESTOptionsGetter, stopCh <-chan struct{}) ControllerStorage {
+	controllerREST, statusREST := NewREST(optsGetter, stopCh)
 	controllerRegistry := replicationcontroller.NewRegistry(controllerREST)
 
 	return ControllerStorage{
@@ -59,7 +59,7 @@ type REST struct {
 }
 
 // NewREST returns a RESTStorage object that will work against replication controllers.
-func NewREST(optsGetter generic.RESTOptionsGetter) (*REST, *StatusREST) {
+func NewREST(optsGetter generic.RESTOptionsGetter, stopCh <-chan struct{}) (*REST, *StatusREST) {
 	store := &genericregistry.Store{
 		Copier:            api.Scheme,
 		NewFunc:           func() runtime.Object { return &api.ReplicationController{} },
@@ -73,7 +73,7 @@ func NewREST(optsGetter generic.RESTOptionsGetter) (*REST, *StatusREST) {
 		DeleteStrategy: replicationcontroller.Strategy,
 	}
 	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: replicationcontroller.GetAttrs}
-	if err := store.CompleteWithOptions(options); err != nil {
+	if err := store.CompleteWithOptions(options, stopCh); err != nil {
 		panic(err) // TODO: Propagate error up
 	}
 

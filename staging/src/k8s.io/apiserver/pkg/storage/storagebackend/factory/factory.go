@@ -27,7 +27,7 @@ import (
 type DestroyFunc func()
 
 // Create creates a storage backend based on given config.
-func Create(c storagebackend.Config) (storage.Interface, DestroyFunc, error) {
+func Create(c storagebackend.Config, stopCh <-chan struct{}) (storage.Interface, DestroyFunc, error) {
 	switch c.Type {
 	case storagebackend.StorageTypeETCD2:
 		return newETCD2Storage(c)
@@ -36,7 +36,7 @@ func Create(c storagebackend.Config) (storage.Interface, DestroyFunc, error) {
 		// - Support secure connection by using key, cert, and CA files.
 		// - Honor "https" scheme to support secure connection in gRPC.
 		// - Support non-quorum read.
-		return newETCD3Storage(c)
+		return newETCD3Storage(c, stopCh)
 	default:
 		return nil, nil, fmt.Errorf("unknown storage type: %s", c.Type)
 	}

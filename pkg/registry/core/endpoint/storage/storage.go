@@ -31,7 +31,7 @@ type REST struct {
 }
 
 // NewREST returns a RESTStorage object that will work against endpoints.
-func NewREST(optsGetter generic.RESTOptionsGetter) *REST {
+func NewREST(optsGetter generic.RESTOptionsGetter, stopCh <-chan struct{}) *REST {
 	store := &genericregistry.Store{
 		Copier:            api.Scheme,
 		NewFunc:           func() runtime.Object { return &api.Endpoints{} },
@@ -45,7 +45,7 @@ func NewREST(optsGetter generic.RESTOptionsGetter) *REST {
 		DeleteStrategy: endpoint.Strategy,
 	}
 	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: endpoint.GetAttrs}
-	if err := store.CompleteWithOptions(options); err != nil {
+	if err := store.CompleteWithOptions(options, stopCh); err != nil {
 		panic(err) // TODO: Propagate error up
 	}
 	return &REST{store}

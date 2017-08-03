@@ -35,7 +35,7 @@ type RESTStorageProvider struct {
 	Authorizer authorizer.Authorizer
 }
 
-func (p RESTStorageProvider) NewRESTStorage(apiResourceConfigSource serverstorage.APIResourceConfigSource, restOptionsGetter generic.RESTOptionsGetter) (genericapiserver.APIGroupInfo, bool) {
+func (p RESTStorageProvider) NewRESTStorage(apiResourceConfigSource serverstorage.APIResourceConfigSource, restOptionsGetter generic.RESTOptionsGetter, stopCh <-chan struct{}) (genericapiserver.APIGroupInfo, bool) {
 	if p.Authorizer == nil {
 		return genericapiserver.APIGroupInfo{}, false
 	}

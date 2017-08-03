@@ -36,7 +36,8 @@ type StorageDecorator func(
 	keyFunc func(obj runtime.Object) (string, error),
 	newListFunc func() runtime.Object,
 	getAttrsFunc storage.AttrFunc,
-	trigger storage.TriggerPublisherFunc) (storage.Interface, factory.DestroyFunc)
+	trigger storage.TriggerPublisherFunc,
+	stopCh <-chan struct{}) (storage.Interface, factory.DestroyFunc)
 
 // UndecoratedStorage returns the given a new storage from the given config
 // without any decoration.
@@ -49,15 +50,16 @@ func UndecoratedStorage(
 	keyFunc func(obj runtime.Object) (string, error),
 	newListFunc func() runtime.Object,
 	getAttrsFunc storage.AttrFunc,
-	trigger storage.TriggerPublisherFunc) (storage.Interface, factory.DestroyFunc) {
-	return NewRawStorage(config)
+	trigger storage.TriggerPublisherFunc,
+	stopCh <-chan struct{}) (storage.Interface, factory.DestroyFunc) {
+	return NewRawStorage(config, stopCh)
 }
 
 // NewRawStorage creates the low level kv storage. This is a work-around for current
 // two layer of same storage interface.
 // TODO: Once cacher is enabled on all registries (event registry is special), we will remove this method.
-func NewRawStorage(config *storagebackend.Config) (storage.Interface, factory.DestroyFunc) {
-	s, d, err := factory.Create(*config)
+func NewRawStorage(config *storagebackend.Config, stopCh <-chan struct{}) (storage.Interface, factory.DestroyFunc) {
+	s, d, err := factory.Create(*config, stopCh)
 	if err != nil {
 		glog.Fatalf("Unable to create storage backend: config (%v), err (%v)", config, err)
 	}

@@ -1764,13 +1764,13 @@ func TestStoreWatch(t *testing.T) {
 	}
 }
 
-func newTestGenericStoreRegistry(t *testing.T, scheme *runtime.Scheme, hasCacheEnabled bool) (factory.DestroyFunc, *Store) {
+func newTestGenericStoreRegistry(t *testing.T, scheme *runtime.Scheme, hasCacheEnabled bool, stopCh <-chan struct{}) (factory.DestroyFunc, *Store) {
 	podPrefix := "/pods"
 	server, sc := etcdtesting.NewUnsecuredEtcd3TestClientServer(t, scheme)
 	strategy := &testRESTStrategy{scheme, names.SimpleNameGenerator, true, false, true}
 
 	sc.Codec = apitesting.TestStorageCodec(codecs, examplev1.SchemeGroupVersion)
-	s, dFunc, err := factory.Create(*sc)
+	s, dFunc, err := factory.Create(*sc, stopCh)
 	if err != nil {
 		t.Fatalf("Error creating storage: %v", err)
 	}

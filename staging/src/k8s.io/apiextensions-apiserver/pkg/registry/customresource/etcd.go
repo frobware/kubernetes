@@ -30,7 +30,7 @@ type REST struct {
 }
 
 // NewREST returns a RESTStorage object that will work against API services.
-func NewREST(resource schema.GroupResource, listKind schema.GroupVersionKind, copier runtime.ObjectCopier, strategy CustomResourceDefinitionStorageStrategy, optsGetter generic.RESTOptionsGetter) *REST {
+func NewREST(resource schema.GroupResource, listKind schema.GroupVersionKind, copier runtime.ObjectCopier, strategy CustomResourceDefinitionStorageStrategy, optsGetter generic.RESTOptionsGetter, stopCh <-chan struct{}) *REST {
 	store := &genericregistry.Store{
 		Copier:  copier,
 		NewFunc: func() runtime.Object { return &unstructured.Unstructured{} },
@@ -48,7 +48,7 @@ func NewREST(resource schema.GroupResource, listKind schema.GroupVersionKind, co
 		DeleteStrategy: strategy,
 	}
 	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: strategy.GetAttrs}
-	if err := store.CompleteWithOptions(options); err != nil {
+	if err := store.CompleteWithOptions(options, stopCh); err != nil {
 		panic(err) // TODO: Propagate error up
 	}
 	return &REST{store}

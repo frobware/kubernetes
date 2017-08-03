@@ -71,7 +71,7 @@ func (r *StatusREST) Update(ctx genericapirequest.Context, name string, objInfo 
 }
 
 // NewStorage returns a NodeStorage object that will work against nodes.
-func NewStorage(optsGetter generic.RESTOptionsGetter, kubeletClientConfig client.KubeletClientConfig, proxyTransport http.RoundTripper) (*NodeStorage, error) {
+func NewStorage(optsGetter generic.RESTOptionsGetter, kubeletClientConfig client.KubeletClientConfig, proxyTransport http.RoundTripper, stopCh <-chan struct{}) (*NodeStorage, error) {
 	store := &genericregistry.Store{
 		Copier:            api.Scheme,
 		NewFunc:           func() runtime.Object { return &api.Node{} },
@@ -86,7 +86,7 @@ func NewStorage(optsGetter generic.RESTOptionsGetter, kubeletClientConfig client
 		ExportStrategy: node.Strategy,
 	}
 	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: node.GetAttrs, TriggerFunc: node.NodeNameTriggerFunc}
-	if err := store.CompleteWithOptions(options); err != nil {
+	if err := store.CompleteWithOptions(options, stopCh); err != nil {
 		return nil, err
 	}
 

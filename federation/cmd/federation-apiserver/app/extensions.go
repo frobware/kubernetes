@@ -32,9 +32,9 @@ import (
 	replicasetstore "k8s.io/kubernetes/pkg/registry/extensions/replicaset/storage"
 )
 
-func installExtensionsAPIs(g *genericapiserver.GenericAPIServer, optsGetter generic.RESTOptionsGetter, apiResourceConfigSource storage.APIResourceConfigSource) {
+func installExtensionsAPIs(g *genericapiserver.GenericAPIServer, optsGetter generic.RESTOptionsGetter, apiResourceConfigSource storage.APIResourceConfigSource, stopCh <-chan struct{}) {
 	replicasetsStorageFn := func() map[string]rest.Storage {
-		replicaSetStorage := replicasetstore.NewStorage(optsGetter)
+		replicaSetStorage := replicasetstore.NewStorage(optsGetter, stopCh)
 		return map[string]rest.Storage{
 			"replicasets":        replicaSetStorage.ReplicaSet,
 			"replicasets/status": replicaSetStorage.Status,
@@ -42,7 +42,7 @@ func installExtensionsAPIs(g *genericapiserver.GenericAPIServer, optsGetter gene
 		}
 	}
 	deploymentsStorageFn := func() map[string]rest.Storage {
-		deploymentStorage := deploymentstore.NewStorage(optsGetter)
+		deploymentStorage := deploymentstore.NewStorage(optsGetter, stopCh)
 		return map[string]rest.Storage{
 			"deployments":          deploymentStorage.Deployment,
 			"deployments/status":   deploymentStorage.Status,
@@ -51,14 +51,14 @@ func installExtensionsAPIs(g *genericapiserver.GenericAPIServer, optsGetter gene
 		}
 	}
 	ingressesStorageFn := func() map[string]rest.Storage {
-		ingressStorage, ingressStatusStorage := ingressstore.NewREST(optsGetter)
+		ingressStorage, ingressStatusStorage := ingressstore.NewREST(optsGetter, stopCh)
 		return map[string]rest.Storage{
 			"ingresses":        ingressStorage,
 			"ingresses/status": ingressStatusStorage,
 		}
 	}
 	daemonsetsStorageFn := func() map[string]rest.Storage {
-		daemonSetStorage, daemonSetStatusStorage := daemonsetstore.NewREST(optsGetter)
+		daemonSetStorage, daemonSetStatusStorage := daemonsetstore.NewREST(optsGetter, stopCh)
 		return map[string]rest.Storage{
 			"daemonsets":        daemonSetStorage,
 			"daemonsets/status": daemonSetStatusStorage,

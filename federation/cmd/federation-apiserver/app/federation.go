@@ -30,10 +30,10 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 )
 
-func installFederationAPIs(g *genericapiserver.GenericAPIServer, optsGetter generic.RESTOptionsGetter, apiResourceConfigSource storage.APIResourceConfigSource) {
+func installFederationAPIs(g *genericapiserver.GenericAPIServer, optsGetter generic.RESTOptionsGetter, apiResourceConfigSource storage.APIResourceConfigSource, stopCh <-chan struct{}) {
 	groupName := federation.GroupName
 	clustersStorageFn := func() map[string]rest.Storage {
-		clusterStorage, clusterStatusStorage := clusteretcd.NewREST(optsGetter)
+		clusterStorage, clusterStatusStorage := clusteretcd.NewREST(optsGetter, stopCh)
 		return map[string]rest.Storage{
 			"clusters":        clusterStorage,
 			"clusters/status": clusterStatusStorage,

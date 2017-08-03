@@ -44,8 +44,8 @@ type DeploymentStorage struct {
 	Rollback   *RollbackREST
 }
 
-func NewStorage(optsGetter generic.RESTOptionsGetter) DeploymentStorage {
-	deploymentRest, deploymentStatusRest, deploymentRollbackRest := NewREST(optsGetter)
+func NewStorage(optsGetter generic.RESTOptionsGetter, stopCh <-chan struct{}) DeploymentStorage {
+	deploymentRest, deploymentStatusRest, deploymentRollbackRest := NewREST(optsGetter, stopCh)
 	deploymentRegistry := deployment.NewRegistry(deploymentRest)
 
 	return DeploymentStorage{
@@ -61,7 +61,7 @@ type REST struct {
 }
 
 // NewREST returns a RESTStorage object that will work against deployments.
-func NewREST(optsGetter generic.RESTOptionsGetter) (*REST, *StatusREST, *RollbackREST) {
+func NewREST(optsGetter generic.RESTOptionsGetter, stopCh <-chan struct{}) (*REST, *StatusREST, *RollbackREST) {
 	store := &genericregistry.Store{
 		Copier:            api.Scheme,
 		NewFunc:           func() runtime.Object { return &extensions.Deployment{} },
@@ -75,7 +75,7 @@ func NewREST(optsGetter generic.RESTOptionsGetter) (*REST, *StatusREST, *Rollbac
 		DeleteStrategy: deployment.Strategy,
 	}
 	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: deployment.GetAttrs}
-	if err := store.CompleteWithOptions(options); err != nil {
+	if err := store.CompleteWithOptions(options, stopCh); err != nil {
 		panic(err) // TODO: Propagate error up
 	}
 

@@ -1236,7 +1236,7 @@ func (e *Store) Export(ctx genericapirequest.Context, name string, opts metav1.E
 
 // CompleteWithOptions updates the store with the provided options and
 // defaults common fields.
-func (e *Store) CompleteWithOptions(options *generic.StoreOptions) error {
+func (e *Store) CompleteWithOptions(options *generic.StoreOptions, stopCh <-chan struct{}) error {
 	if e.QualifiedResource.Empty() {
 		return fmt.Errorf("store %#v must have a non-empty qualified resource", e)
 	}
@@ -1271,7 +1271,7 @@ func (e *Store) CompleteWithOptions(options *generic.StoreOptions) error {
 		return fmt.Errorf("options for %s must have AttrFunc set", e.QualifiedResource.String())
 	}
 
-	opts, err := options.RESTOptions.GetRESTOptions(e.QualifiedResource)
+	opts, err := options.RESTOptions.GetRESTOptions(e.QualifiedResource, stopCh)
 	if err != nil {
 		return err
 	}
@@ -1351,7 +1351,14 @@ func (e *Store) CompleteWithOptions(options *generic.StoreOptions) error {
 			e.NewListFunc,
 			options.AttrFunc,
 			triggerFunc,
-		)
+			stopCh)
+
+		if stopCh != nil {
+			go func() {
+				<-stopCh
+				e.DestroyFunc()
+			}()
+		}
 	}
 
 	return nil

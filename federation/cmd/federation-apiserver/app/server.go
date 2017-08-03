@@ -243,11 +243,11 @@ func NonBlockingRun(s *options.ServerRunOptions, stopCh <-chan struct{}) error {
 	routes.Logs{}.Install(m.Handler.GoRestfulContainer)
 
 	apiResourceConfigSource := storageFactory.APIResourceConfigSource
-	installFederationAPIs(m, genericConfig.RESTOptionsGetter, apiResourceConfigSource)
-	installCoreAPIs(s, m, genericConfig.RESTOptionsGetter, apiResourceConfigSource)
-	installExtensionsAPIs(m, genericConfig.RESTOptionsGetter, apiResourceConfigSource)
-	installBatchAPIs(m, genericConfig.RESTOptionsGetter, apiResourceConfigSource)
-	installAutoscalingAPIs(m, genericConfig.RESTOptionsGetter, apiResourceConfigSource)
+	installFederationAPIs(m, genericConfig.RESTOptionsGetter, apiResourceConfigSource, stopCh)
+	installCoreAPIs(s, m, genericConfig.RESTOptionsGetter, apiResourceConfigSource, stopCh)
+	installExtensionsAPIs(m, genericConfig.RESTOptionsGetter, apiResourceConfigSource, stopCh)
+	installBatchAPIs(m, genericConfig.RESTOptionsGetter, apiResourceConfigSource, stopCh)
+	installAutoscalingAPIs(m, genericConfig.RESTOptionsGetter, apiResourceConfigSource, stopCh)
 
 	// run the insecure server now
 	if insecureServingOptions != nil {

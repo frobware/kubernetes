@@ -31,9 +31,9 @@ type REST struct {
 }
 
 // NewREST returns a RESTStorage object that will work against events.
-func NewREST(optsGetter generic.RESTOptionsGetter, ttl uint64) *REST {
+func NewREST(optsGetter generic.RESTOptionsGetter, ttl uint64, stopCh <-chan struct{}) *REST {
 	resource := api.Resource("events")
-	opts, err := optsGetter.GetRESTOptions(resource)
+	opts, err := optsGetter.GetRESTOptions(resource, stopCh)
 	if err != nil {
 		panic(err) // TODO: Propagate error up
 	}
@@ -58,7 +58,7 @@ func NewREST(optsGetter generic.RESTOptionsGetter, ttl uint64) *REST {
 		DeleteStrategy: event.Strategy,
 	}
 	options := &generic.StoreOptions{RESTOptions: opts, AttrFunc: event.GetAttrs} // Pass in opts to use UndecoratedStorage
-	if err := store.CompleteWithOptions(options); err != nil {
+	if err := store.CompleteWithOptions(options, stopCh); err != nil {
 		panic(err) // TODO: Propagate error up
 	}
 	return &REST{store}

@@ -27,7 +27,7 @@ import (
 	"k8s.io/apiserver/pkg/storage/value"
 )
 
-func newETCD3Storage(c storagebackend.Config) (storage.Interface, DestroyFunc, error) {
+func newETCD3Storage(c storagebackend.Config, stopCh <-chan struct{}) (storage.Interface, DestroyFunc, error) {
 	tlsInfo := transport.TLSInfo{
 		CertFile: c.CertFile,
 		KeyFile:  c.KeyFile,

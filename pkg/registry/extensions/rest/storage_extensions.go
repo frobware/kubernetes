@@ -36,59 +36,59 @@ import (
 type RESTStorageProvider struct {
 }
 
-func (p RESTStorageProvider) NewRESTStorage(apiResourceConfigSource serverstorage.APIResourceConfigSource, restOptionsGetter generic.RESTOptionsGetter) (genericapiserver.APIGroupInfo, bool) {
+func (p RESTStorageProvider) NewRESTStorage(apiResourceConfigSource serverstorage.APIResourceConfigSource, restOptionsGetter generic.RESTOptionsGetter, stopCh <-chan struct{}) (genericapiserver.APIGroupInfo, bool) {
 	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(extensions.GroupName, api.Registry, api.Scheme, api.ParameterCodec, api.Codecs)
 	// If you add a version here, be sure to add an entry in `k8s.io/kubernetes/cmd/kube-apiserver/app/aggregator.go with specific priorities.
 	// TODO refactor the plumbing to provide the information in the APIGroupInfo
 
 	if apiResourceConfigSource.AnyResourcesForVersionEnabled(extensionsapiv1beta1.SchemeGroupVersion) {
-		apiGroupInfo.VersionedResourcesStorageMap[extensionsapiv1beta1.SchemeGroupVersion.Version] = p.v1beta1Storage(apiResourceConfigSource, restOptionsGetter)
+		apiGroupInfo.VersionedResourcesStorageMap[extensionsapiv1beta1.SchemeGroupVersion.Version] = p.v1beta1Storage(apiResourceConfigSource, restOptionsGetter, stopCh)
 		apiGroupInfo.GroupMeta.GroupVersion = extensionsapiv1beta1.SchemeGroupVersion
 	}
 
 	return apiGroupInfo, true
 }
 
-func (p RESTStorageProvider) v1beta1Storage(apiResourceConfigSource serverstorage.APIResourceConfigSource, restOptionsGetter generic.RESTOptionsGetter) map[string]rest.Storage {
+func (p RESTStorageProvider) v1beta1Storage(apiResourceConfigSource serverstorage.APIResourceConfigSource, restOptionsGetter generic.RESTOptionsGetter, stopCh <-chan struct{}) map[string]rest.Storage {
 	version := extensionsapiv1beta1.SchemeGroupVersion
 
 	storage := map[string]rest.Storage{}
 
 	// This is a dummy replication controller for scale subresource purposes.
 	// TODO: figure out how to enable this only if needed as a part of scale subresource GA.
-	controllerStorage := expcontrollerstore.NewStorage(restOptionsGetter)
+	controllerStorage := expcontrollerstore.NewStorage(restOptionsGetter, stopCh)
 	storage["replicationcontrollers"] = controllerStorage.ReplicationController
 	storage["replicationcontrollers/scale"] = controllerStorage.Scale
 
 	if apiResourceConfigSource.ResourceEnabled(version.WithResource("daemonsets")) {
-		daemonSetStorage, daemonSetStatusStorage := daemonstore.NewREST(restOptionsGetter)
+		daemonSetStorage, daemonSetStatusStorage := daemonstore.NewREST(restOptionsGetter, stopCh)
 		storage["daemonsets"] = daemonSetStorage
 		storage["daemonsets/status"] = daemonSetStatusStorage
 	}
 	if apiResourceConfigSource.ResourceEnabled(version.WithResource("deployments")) {
-		deploymentStorage := deploymentstore.NewStorage(restOptionsGetter)
+		deploymentStorage := deploymentstore.NewStorage(restOptionsGetter, stopCh)
 		storage["deployments"] = deploymentStorage.Deployment
 		storage["deployments/status"] = deploymentStorage.Status
 		storage["deployments/rollback"] = deploymentStorage.Rollback
 		storage["deployments/scale"] = deploymentStorage.Scale
 	}
 	if apiResourceConfigSource.ResourceEnabled(version.WithResource("ingresses")) {
-		ingressStorage, ingressStatusStorage := ingressstore.NewREST(restOptionsGetter)
+		ingressStorage, ingressStatusStorage := ingressstore.NewREST(restOptionsGetter, stopCh)
 		storage["ingresses"] = ingressStorage
 		storage["ingresses/status"] = ingressStatusStorage
 	}
 	if apiResourceConfigSource.ResourceEnabled(version.WithResource("podsecuritypolicy")) || apiResourceConfigSource.ResourceEnabled(version.WithResource("podsecuritypolicies")) {
-		podSecurityExtensionsStorage := pspstore.NewREST(restOptionsGetter)
+		podSecurityExtensionsStorage := pspstore.NewREST(restOptionsGetter, stopCh)
 		storage["podSecurityPolicies"] = podSecurityExtensionsStorage
 	}
 	if apiResourceConfigSource.ResourceEnabled(version.WithResource("replicasets")) {
-		replicaSetStorage := replicasetstore.NewStorage(restOptionsGetter)
+		replicaSetStorage := replicasetstore.NewStorage(restOptionsGetter, stopCh)
 		storage["replicasets"] = replicaSetStorage.ReplicaSet
 		storage["replicasets/status"] = replicaSetStorage.Status
 		storage["replicasets/scale"] = replicaSetStorage.Scale
 	}
 	if apiResourceConfigSource.ResourceEnabled(version.WithResource("networkpolicies")) {
-		networkExtensionsStorage := networkpolicystore.NewREST(restOptionsGetter)
+		networkExtensionsStorage := networkpolicystore.NewREST(restOptionsGetter, stopCh)
 		storage["networkpolicies"] = networkExtensionsStorage
 	}
 

@@ -29,9 +29,9 @@ import (
 	jobstorage "k8s.io/kubernetes/pkg/registry/batch/job/storage"
 )
 
-func installBatchAPIs(g *genericapiserver.GenericAPIServer, optsGetter generic.RESTOptionsGetter, apiResourceConfigSource storage.APIResourceConfigSource) {
+func installBatchAPIs(g *genericapiserver.GenericAPIServer, optsGetter generic.RESTOptionsGetter, apiResourceConfigSource storage.APIResourceConfigSource, stopCh <-chan struct{}) {
 	jobsStorageFn := func() map[string]rest.Storage {
-		jobStorage := jobstorage.NewStorage(optsGetter)
+		jobStorage := jobstorage.NewStorage(optsGetter, stopCh)
 		return map[string]rest.Storage{
 			"jobs":        jobStorage.Job,
 			"jobs/status": jobStorage.Status,

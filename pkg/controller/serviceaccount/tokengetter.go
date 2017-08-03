@@ -90,12 +90,14 @@ func NewGetterFromStorageInterface(
 	saConfig *storagebackend.Config,
 	saPrefix string,
 	secretConfig *storagebackend.Config,
-	secretPrefix string) serviceaccount.ServiceAccountTokenGetter {
+	secretPrefix string,
+	stopCh <-chan struct{}) serviceaccount.ServiceAccountTokenGetter {
 
 	saOpts := generic.RESTOptions{StorageConfig: saConfig, Decorator: generic.UndecoratedStorage, ResourcePrefix: saPrefix}
 	secretOpts := generic.RESTOptions{StorageConfig: secretConfig, Decorator: generic.UndecoratedStorage, ResourcePrefix: secretPrefix}
-	return NewGetterFromRegistries(
-		serviceaccountregistry.NewRegistry(serviceaccountstore.NewREST(saOpts)),
-		secret.NewRegistry(secretstore.NewREST(secretOpts)),
-	)
+	s1 := serviceaccountstore.NewREST(saOpts, stopCh)
+	s2 := secretstore.NewREST(secretOpts, stopCh)
+	r1 := serviceaccountregistry.NewRegistry(s1)
+	r2 := secret.NewRegistry(s2)
+	return NewGetterFromRegistries(r1, r2)
 }

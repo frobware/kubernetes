@@ -42,8 +42,8 @@ type ReplicaSetStorage struct {
 	Scale      *ScaleREST
 }
 
-func NewStorage(optsGetter generic.RESTOptionsGetter) ReplicaSetStorage {
-	replicaSetRest, replicaSetStatusRest := NewREST(optsGetter)
+func NewStorage(optsGetter generic.RESTOptionsGetter, stopCh <-chan struct{}) ReplicaSetStorage {
+	replicaSetRest, replicaSetStatusRest := NewREST(optsGetter, stopCh)
 	replicaSetRegistry := replicaset.NewRegistry(replicaSetRest)
 
 	return ReplicaSetStorage{
@@ -58,7 +58,7 @@ type REST struct {
 }
 
 // NewREST returns a RESTStorage object that will work against ReplicaSet.
-func NewREST(optsGetter generic.RESTOptionsGetter) (*REST, *StatusREST) {
+func NewREST(optsGetter generic.RESTOptionsGetter, stopCh <-chan struct{}) (*REST, *StatusREST) {
 	store := &genericregistry.Store{
 		Copier:            api.Scheme,
 		NewFunc:           func() runtime.Object { return &extensions.ReplicaSet{} },
@@ -72,7 +72,7 @@ func NewREST(optsGetter generic.RESTOptionsGetter) (*REST, *StatusREST) {
 		DeleteStrategy: replicaset.Strategy,
 	}
 	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: replicaset.GetAttrs}
-	if err := store.CompleteWithOptions(options); err != nil {
+	if err := store.CompleteWithOptions(options, stopCh); err != nil {
 		panic(err) // TODO: Propagate error up
 	}
 
