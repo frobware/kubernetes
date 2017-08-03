@@ -225,6 +225,13 @@ func (e *Store) New() runtime.Object {
 	return e.NewFunc()
 }
 
+func (e *Store) DESTROY() {
+	if e.DestroyFunc != nil {
+		e.DestroyFunc()
+		e.DestroyFunc = nil
+	}
+}
+
 // NewList implements rest.Lister.
 func (e *Store) NewList() runtime.Object {
 	return e.NewListFunc()
@@ -1350,8 +1357,7 @@ func (e *Store) CompleteWithOptions(options *generic.StoreOptions) error {
 			keyFunc,
 			e.NewListFunc,
 			options.AttrFunc,
-			triggerFunc,
-		)
+			triggerFunc)
 	}
 
 	return nil

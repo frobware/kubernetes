@@ -56,6 +56,7 @@ type Storage interface {
 	// New returns an empty object that can be used with Create and Update after request data has been put into it.
 	// This object must be a pointer type for use with Codec.DecodeInto([]byte, runtime.Object)
 	New() runtime.Object
+	DESTROY()
 }
 
 // KindProvider specifies a different kind for its API than for its internal storage.  This is necessary for external

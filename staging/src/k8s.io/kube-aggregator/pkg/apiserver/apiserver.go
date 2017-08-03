@@ -175,8 +175,8 @@ func (c *Config) SkipComplete() completedConfig {
 }
 
 // New returns a new instance of APIAggregator from the given config.
-func (c completedConfig) NewWithDelegate(delegationTarget genericapiserver.DelegationTarget) (*APIAggregator, error) {
-	genericServer, err := c.Config.GenericConfig.SkipComplete().New("kube-aggregator", delegationTarget) // completion is done in Complete, no need for a second time
+func (c completedConfig) NewWithDelegate(delegationTarget genericapiserver.DelegationTarget, stopCh <-chan struct{}) (*APIAggregator, error) {
+	genericServer, err := c.Config.GenericConfig.SkipComplete().New("kube-aggregator", delegationTarget, stopCh) // completion is done in Complete, no need for a second time
 	if err != nil {
 		return nil, err
 	}

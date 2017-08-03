@@ -110,9 +110,6 @@ type GenericAPIServer struct {
 	// external (public internet) URLs for this GenericAPIServer.
 	ExternalAddress string
 
-	// storage contains the RESTful endpoints exposed by this GenericAPIServer
-	storage map[string]rest.Storage
-
 	// Serializer controls how common API objects not in a group/version prefix are serialized for this server.
 	// Individual APIGroups may define their own serializers.
 	Serializer runtime.NegotiatedSerializer
@@ -153,6 +150,11 @@ type GenericAPIServer struct {
 	// enableAPIResponseCompression indicates whether API Responses should support compression
 	// if the client requests it via Accept-Encoding
 	enableAPIResponseCompression bool
+
+	// Destroy ...
+	destroy_ch <-chan struct{}
+
+	apiGroupInfo []*APIGroupInfo
 }
 
 // DelegationTarget is an interface which allows for composition of API servers with top level handling that works
@@ -268,6 +270,7 @@ func (s preparedGenericAPIServer) Run(stopCh <-chan struct{}) error {
 	}
 
 	<-stopCh
+
 	return nil
 }
 
@@ -314,6 +317,23 @@ func (s *GenericAPIServer) EffectiveSecurePort() int {
 	return s.effectiveSecurePort
 }
 
+func (s *GenericAPIServer) DESTROY() {
+	destroyed := map[rest.Storage]bool{}
+
+	for i := range s.apiGroupInfo {
+		fmt.Printf("DESTROY [%v] [%p] - DESTROY %+v\n", i, s, s.apiGroupInfo[i].VersionedResourcesStorageMap)
+		for _, v := range s.apiGroupInfo[i].VersionedResourcesStorageMap {
+			for _, v2 := range v {
+				if destroyed[v2] {
+					continue
+				}
+				v2.DESTROY()
+				destroyed[v2] = true
+			}
+		}
+	}
+}
+
 // installAPIResources is a private method for installing the REST storage backing each api groupversionresource
 func (s *GenericAPIServer) installAPIResources(apiPrefix string, apiGroupInfo *APIGroupInfo) error {
 	for _, groupVersion := range apiGroupInfo.GroupMeta.GroupVersions {
@@ -351,6 +371,16 @@ func (s *GenericAPIServer) InstallLegacyAPIGroup(apiPrefix string, apiGroupInfo 
 	// Install the version handler.
 	// Add a handler at /<apiPrefix> to enumerate the supported api versions.
 	s.Handler.GoRestfulContainer.Add(discovery.NewLegacyRootAPIHandler(s.discoveryAddresses, s.Serializer, apiPrefix, apiVersions, s.requestContextMapper).WebService())
+
+	s.apiGroupInfo = append(s.apiGroupInfo, apiGroupInfo)
+
+	if s.destroy_ch != nil {
+		go func() {
+			<-s.destroy_ch
+			s.DESTROY()
+		}()
+	}
+
 	return nil
 }
 
@@ -395,6 +425,15 @@ func (s *GenericAPIServer) InstallAPIGroup(apiGroupInfo *APIGroupInfo) error {
 
 	s.DiscoveryGroupManager.AddGroup(apiGroup)
 	s.Handler.GoRestfulContainer.Add(discovery.NewAPIGroupHandler(s.Serializer, apiGroup, s.requestContextMapper).WebService())
+
+	s.apiGroupInfo = append(s.apiGroupInfo, apiGroupInfo)
+
+	if s.destroy_ch != nil {
+		go func() {
+			<-s.destroy_ch
+			s.DESTROY()
+		}()
+	}
 
 	return nil
 }

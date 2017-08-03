@@ -109,6 +109,10 @@ func (r *StatusREST) New() runtime.Object {
 	return &extensions.Deployment{}
 }
 
+func (r *StatusREST) DESTROY() {
+	r.store.DESTROY()
+}
+
 // Get retrieves the object from the storage. It is required to support Patch.
 func (r *StatusREST) Get(ctx genericapirequest.Context, name string, options *metav1.GetOptions) (runtime.Object, error) {
 	return r.store.Get(ctx, name, options)
@@ -127,6 +131,11 @@ type RollbackREST struct {
 // New creates a rollback
 func (r *RollbackREST) New() runtime.Object {
 	return &extensions.DeploymentRollback{}
+}
+
+// Destroy the storage
+func (r *RollbackREST) DESTROY() {
+	r.store.DESTROY()
 }
 
 var _ = rest.Creater(&RollbackREST{})
@@ -198,6 +207,9 @@ var _ = rest.Patcher(&ScaleREST{})
 // New creates a new Scale object
 func (r *ScaleREST) New() runtime.Object {
 	return &extensions.Scale{}
+}
+
+func (r *ScaleREST) DESTROY() {
 }
 
 func (r *ScaleREST) Get(ctx genericapirequest.Context, name string, options *metav1.GetOptions) (runtime.Object, error) {

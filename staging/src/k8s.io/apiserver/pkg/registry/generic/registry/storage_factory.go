@@ -37,7 +37,6 @@ func StorageWithCacher(defaultCapacity int) generic.StorageDecorator {
 		newListFunc func() runtime.Object,
 		getAttrsFunc storage.AttrFunc,
 		triggerFunc storage.TriggerPublisherFunc) (storage.Interface, factory.DestroyFunc) {
-
 		capacity := defaultCapacity
 		if requestedSize != nil && *requestedSize == 0 {
 			panic("StorageWithCacher must not be called with zero cache size")

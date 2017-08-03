@@ -50,6 +50,10 @@ func (r *ProxyREST) New() runtime.Object {
 	return &api.Node{}
 }
 
+func (r *ProxyREST) DESTROY() {
+	r.Store.DESTROY()
+}
+
 // ConnectMethods returns the list of HTTP methods that can be proxied
 func (r *ProxyREST) ConnectMethods() []string {
 	return proxyMethods

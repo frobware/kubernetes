@@ -115,7 +115,7 @@ func setUp(t *testing.T) (*etcdtesting.EtcdTestServer, Config, *assert.Assertion
 func newMaster(t *testing.T) (*Master, *etcdtesting.EtcdTestServer, Config, *assert.Assertions) {
 	etcdserver, config, assert := setUp(t)
 
-	master, err := config.Complete().New(genericapiserver.EmptyDelegate)
+	master, err := config.Complete().New(genericapiserver.EmptyDelegate, nil) // frobware(TODO)
 	if err != nil {
 		t.Fatalf("Error in bringing up the master: %v", err)
 	}

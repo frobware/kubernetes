@@ -296,8 +296,7 @@ func (r *crdHandler) getServingInfoFor(crd *apiextensions.CustomResourceDefiniti
 			crd.Spec.Scope == apiextensions.NamespaceScoped,
 			kind,
 		),
-		r.restOptionsGetter,
-	)
+		r.restOptionsGetter)
 
 	selfLinkPrefix := ""
 	switch crd.Spec.Scope {

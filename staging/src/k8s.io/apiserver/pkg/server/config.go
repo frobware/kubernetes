@@ -375,7 +375,7 @@ func (c *Config) SkipComplete() completedConfig {
 
 // New creates a new server which logically combines the handling chain with the passed server.
 // name is used to differentiate for logging.  The handler chain in particular can be difficult as it starts delgating.
-func (c completedConfig) New(name string, delegationTarget DelegationTarget) (*GenericAPIServer, error) {
+func (c completedConfig) New(name string, delegationTarget DelegationTarget, stopCh <-chan struct{}) (*GenericAPIServer, error) {
 	// The delegationTarget and the config must agree on the RequestContextMapper
 
 	if c.Serializer == nil {
@@ -419,7 +419,17 @@ func (c completedConfig) New(name string, delegationTarget DelegationTarget) (*G
 		DiscoveryGroupManager: discovery.NewRootAPIsHandler(c.DiscoveryAddresses, c.Serializer, c.RequestContextMapper),
 
 		enableAPIResponseCompression: c.EnableAPIResponseCompression,
+
+		destroy_ch:   stopCh,
+		apiGroupInfo: []*APIGroupInfo{},
 	}
+
+	go func() {
+		<-stopCh
+		s.DESTROY()
+	}()
+
+	fmt.Printf("RETURNING APISERVER %p\n", s)
 
 	for k, v := range delegationTarget.PostStartHooks() {
 		s.postStartHooks[k] = v

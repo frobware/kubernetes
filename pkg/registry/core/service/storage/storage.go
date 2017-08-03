@@ -82,6 +82,10 @@ func (r *StatusREST) New() runtime.Object {
 	return &api.Service{}
 }
 
+func (r *StatusREST) DESTROY() {
+	r.store.DESTROY()
+}
+
 // Get retrieves the object from the storage. It is required to support Patch.
 func (r *StatusREST) Get(ctx genericapirequest.Context, name string, options *metav1.GetOptions) (runtime.Object, error) {
 	return r.store.Get(ctx, name, options)

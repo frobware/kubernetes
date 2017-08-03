@@ -36,5 +36,5 @@ func RESTInPeace(storage rest.StandardStorage, err error) rest.StandardStorage {
 		err = fmt.Errorf("Unable to create REST storage for a resource due to %v. Committing suicide.", err)
 		panic(err)
 	}
-	return storage
+	return nil
 }

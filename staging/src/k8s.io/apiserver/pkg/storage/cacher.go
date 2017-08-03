@@ -627,6 +627,9 @@ func (c *Cacher) isStopped() bool {
 }
 
 func (c *Cacher) Stop() {
+	if c.isStopped() {
+		return
+	}
 	c.stopLock.Lock()
 	c.stopped = true
 	c.stopLock.Unlock()
