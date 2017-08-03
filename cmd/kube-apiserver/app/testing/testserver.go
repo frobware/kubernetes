@@ -27,6 +27,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	etcdtesting "k8s.io/apiserver/pkg/storage/etcd/testing"
+	"k8s.io/apiserver/pkg/storage/storagebackend"
 	"k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/kubernetes/cmd/kube-apiserver/app"
@@ -37,6 +38,8 @@ import (
 // TearDownFunc is to be called to tear down a test server.
 type TearDownFunc func()
 
+func VacuousTearDown() {}
+
 // StartTestServer starts a etcd server and kube-apiserver. A rest client config and a tear-down func
 // are returned.
 //
@@ -46,13 +49,18 @@ type TearDownFunc func()
 func StartTestServer(t *testing.T) (result *restclient.Config, tearDownForCaller TearDownFunc, err error) {
 	var tmpDir string
 	var etcdServer *etcdtesting.EtcdTestServer
+	var storageConfig *storagebackend.Config
+
 	stopCh := make(chan struct{})
 	tearDown := func() {
+		t.Logf("Tearing down etcd...")
 		close(stopCh)
 		if etcdServer != nil {
+			t.Logf("etcd.Terminate()...")
 			etcdServer.Terminate(t)
 		}
 		if len(tmpDir) != 0 {
+			t.Logf("os.RemoveAll: %v", tmpDir)
 			os.RemoveAll(tmpDir)
 		}
 	}
@@ -63,11 +71,11 @@ func StartTestServer(t *testing.T) (result *restclient.Config, tearDownForCaller
 	}()
 
 	t.Logf("Starting etcd...")
-	etcdServer, storageConfig := etcdtesting.NewUnsecuredEtcd3TestClientServer(t, api.Scheme)
+	etcdServer, storageConfig = etcdtesting.NewUnsecuredEtcd3TestClientServer(t, api.Scheme)
 
 	tmpDir, err = ioutil.TempDir("", "kubernetes-kube-apiserver")
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to create temp dir: %v", err)
+		return nil, VacuousTearDown, fmt.Errorf("Failed to create temp dir: %v", err)
 	}
 
 	s := options.NewServerRunOptions()
@@ -96,7 +104,7 @@ func StartTestServer(t *testing.T) (result *restclient.Config, tearDownForCaller
 	t.Logf("Waiting for /healthz to be ok...")
 	client, err := kubernetes.NewForConfig(server.LoopbackClientConfig)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to create a client: %v", err)
+		return nil, VacuousTearDown, fmt.Errorf("Failed to create a client: %v", err)
 	}
 	err = wait.Poll(100*time.Millisecond, 30*time.Second, func() (bool, error) {
 		select {
@@ -114,7 +122,7 @@ func StartTestServer(t *testing.T) (result *restclient.Config, tearDownForCaller
 		return false, nil
 	})
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to wait for /healthz to return ok: %v", err)
+		return nil, VacuousTearDown, fmt.Errorf("Failed to wait for /healthz to return ok: %v", err)
 	}
 
 	// from here the caller must call tearDown

@@ -88,7 +88,7 @@ type LegacyRESTStorage struct {
 	ServiceNodePortAllocator  rangeallocation.RangeRegistry
 }
 
-func (c LegacyRESTStorageProvider) NewLegacyRESTStorage(restOptionsGetter generic.RESTOptionsGetter) (LegacyRESTStorage, genericapiserver.APIGroupInfo, error) {
+func (c LegacyRESTStorageProvider) NewLegacyRESTStorage(restOptionsGetter generic.RESTOptionsGetter, stopCh <-chan struct{}) (LegacyRESTStorage, genericapiserver.APIGroupInfo, error) {
 	apiGroupInfo := genericapiserver.APIGroupInfo{
 		GroupMeta:                    *api.Registry.GroupOrDie(api.GroupName),
 		VersionedResourcesStorageMap: map[string]map[string]rest.Storage{},
@@ -113,24 +113,27 @@ func (c LegacyRESTStorageProvider) NewLegacyRESTStorage(restOptionsGetter generi
 	}
 	restStorage := LegacyRESTStorage{}
 
-	podTemplateStorage := podtemplatestore.NewREST(restOptionsGetter)
+	podTemplateStorage := podtemplatestore.NewREST(restOptionsGetter, stopCh)
 
-	eventStorage := eventstore.NewREST(restOptionsGetter, uint64(c.EventTTL.Seconds()))
-	limitRangeStorage := limitrangestore.NewREST(restOptionsGetter)
+	eventStorage := eventstore.NewREST(restOptionsGetter, uint64(c.EventTTL.Seconds()), stopCh)
+	d := eventStorage.DestroyFunc
+	fmt.Println("DestroyFunc is ", d)
 
-	resourceQuotaStorage, resourceQuotaStatusStorage := resourcequotastore.NewREST(restOptionsGetter)
-	secretStorage := secretstore.NewREST(restOptionsGetter)
-	serviceAccountStorage := serviceaccountstore.NewREST(restOptionsGetter)
-	persistentVolumeStorage, persistentVolumeStatusStorage := pvstore.NewREST(restOptionsGetter)
-	persistentVolumeClaimStorage, persistentVolumeClaimStatusStorage := pvcstore.NewREST(restOptionsGetter)
-	configMapStorage := configmapstore.NewREST(restOptionsGetter)
+	limitRangeStorage := limitrangestore.NewREST(restOptionsGetter, stopCh)
 
-	namespaceStorage, namespaceStatusStorage, namespaceFinalizeStorage := namespacestore.NewREST(restOptionsGetter)
+	resourceQuotaStorage, resourceQuotaStatusStorage := resourcequotastore.NewREST(restOptionsGetter, stopCh)
+	secretStorage := secretstore.NewREST(restOptionsGetter, stopCh)
+	serviceAccountStorage := serviceaccountstore.NewREST(restOptionsGetter, stopCh)
+	persistentVolumeStorage, persistentVolumeStatusStorage := pvstore.NewREST(restOptionsGetter, stopCh)
+	persistentVolumeClaimStorage, persistentVolumeClaimStatusStorage := pvcstore.NewREST(restOptionsGetter, stopCh)
+	configMapStorage := configmapstore.NewREST(restOptionsGetter, stopCh)
 
-	endpointsStorage := endpointsstore.NewREST(restOptionsGetter)
+	namespaceStorage, namespaceStatusStorage, namespaceFinalizeStorage := namespacestore.NewREST(restOptionsGetter, stopCh)
+
+	endpointsStorage := endpointsstore.NewREST(restOptionsGetter, stopCh)
 	endpointRegistry := endpoint.NewRegistry(endpointsStorage)
 
-	nodeStorage, err := nodestore.NewStorage(restOptionsGetter, c.KubeletClientConfig, c.ProxyTransport)
+	nodeStorage, err := nodestore.NewStorage(restOptionsGetter, c.KubeletClientConfig, c.ProxyTransport, stopCh)
 	if err != nil {
 		return LegacyRESTStorage{}, genericapiserver.APIGroupInfo{}, err
 	}
@@ -140,9 +143,10 @@ func (c LegacyRESTStorageProvider) NewLegacyRESTStorage(restOptionsGetter generi
 		nodeStorage.KubeletConnectionInfo,
 		c.ProxyTransport,
 		podDisruptionClient,
+		stopCh,
 	)
 
-	serviceRESTStorage, serviceStatusStorage := servicestore.NewREST(restOptionsGetter)
+	serviceRESTStorage, serviceStatusStorage := servicestore.NewREST(restOptionsGetter, stopCh)
 	serviceRegistry := service.NewRegistry(serviceRESTStorage)
 
 	var serviceClusterIPRegistry rangeallocation.RangeRegistry
@@ -159,7 +163,7 @@ func (c LegacyRESTStorageProvider) NewLegacyRESTStorage(restOptionsGetter generi
 	ServiceClusterIPAllocator := ipallocator.NewAllocatorCIDRRange(&serviceClusterIPRange, func(max int, rangeSpec string) allocator.Interface {
 		mem := allocator.NewAllocationMap(max, rangeSpec)
 		// TODO etcdallocator package to return a storage interface via the storageFactory
-		etcd := serviceallocator.NewEtcd(mem, "/ranges/serviceips", api.Resource("serviceipallocations"), serviceStorageConfig)
+		etcd := serviceallocator.NewEtcd(mem, "/ranges/serviceips", api.Resource("serviceipallocations"), serviceStorageConfig, stopCh)
 		serviceClusterIPRegistry = etcd
 		return etcd
 	})
@@ -169,13 +173,13 @@ func (c LegacyRESTStorageProvider) NewLegacyRESTStorage(restOptionsGetter generi
 	ServiceNodePortAllocator := portallocator.NewPortAllocatorCustom(c.ServiceNodePortRange, func(max int, rangeSpec string) allocator.Interface {
 		mem := allocator.NewAllocationMap(max, rangeSpec)
 		// TODO etcdallocator package to return a storage interface via the storageFactory
-		etcd := serviceallocator.NewEtcd(mem, "/ranges/servicenodeports", api.Resource("servicenodeportallocations"), serviceStorageConfig)
+		etcd := serviceallocator.NewEtcd(mem, "/ranges/servicenodeports", api.Resource("servicenodeportallocations"), serviceStorageConfig, stopCh)
 		serviceNodePortRegistry = etcd
 		return etcd
 	})
 	restStorage.ServiceNodePortAllocator = serviceNodePortRegistry
 
-	controllerStorage := controllerstore.NewStorage(restOptionsGetter)
+	controllerStorage := controllerstore.NewStorage(restOptionsGetter, stopCh)
 
 	serviceRest := service.NewStorage(serviceRegistry, endpointRegistry, ServiceClusterIPAllocator, ServiceNodePortAllocator, c.ProxyTransport)
 

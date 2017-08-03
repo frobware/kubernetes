@@ -140,7 +140,7 @@ type SimpleRestOptionsFactory struct {
 	Options EtcdOptions
 }
 
-func (f *SimpleRestOptionsFactory) GetRESTOptions(resource schema.GroupResource) (generic.RESTOptions, error) {
+func (f *SimpleRestOptionsFactory) GetRESTOptions(resource schema.GroupResource, stopCh <-chan struct{}) (generic.RESTOptions, error) {
 	ret := generic.RESTOptions{
 		StorageConfig:           &f.Options.StorageConfig,
 		Decorator:               generic.UndecoratedStorage,
@@ -149,7 +149,7 @@ func (f *SimpleRestOptionsFactory) GetRESTOptions(resource schema.GroupResource)
 		ResourcePrefix:          resource.Group + "/" + resource.Resource,
 	}
 	if f.Options.EnableWatchCache {
-		ret.Decorator = genericregistry.StorageWithCacher(f.Options.DefaultWatchCacheSize)
+		ret.Decorator = genericregistry.StorageWithCacher(f.Options.DefaultWatchCacheSize, stopCh)
 	}
 	return ret, nil
 }
@@ -159,7 +159,7 @@ type storageFactoryRestOptionsFactory struct {
 	StorageFactory serverstorage.StorageFactory
 }
 
-func (f *storageFactoryRestOptionsFactory) GetRESTOptions(resource schema.GroupResource) (generic.RESTOptions, error) {
+func (f *storageFactoryRestOptionsFactory) GetRESTOptions(resource schema.GroupResource, stopCh <-chan struct{}) (generic.RESTOptions, error) {
 	storageConfig, err := f.StorageFactory.NewConfig(resource)
 	if err != nil {
 		return generic.RESTOptions{}, fmt.Errorf("unable to find storage destination for %v, due to %v", resource, err.Error())
@@ -173,7 +173,7 @@ func (f *storageFactoryRestOptionsFactory) GetRESTOptions(resource schema.GroupR
 		ResourcePrefix:          f.StorageFactory.ResourcePrefix(resource),
 	}
 	if f.Options.EnableWatchCache {
-		ret.Decorator = genericregistry.StorageWithCacher(f.Options.DefaultWatchCacheSize)
+		ret.Decorator = genericregistry.StorageWithCacher(f.Options.DefaultWatchCacheSize, stopCh)
 	}
 
 	return ret, nil

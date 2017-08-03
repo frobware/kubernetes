@@ -17,15 +17,21 @@ limitations under the License.
 package server
 
 import (
-	"fmt"
+	"bytes"
 	"net/http"
+	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	stdlib "runtime"
+
 	systemd "github.com/coreos/go-systemd/daemon"
 	"github.com/emicklei/go-restful-swagger12"
 	"github.com/golang/glog"
+
+	"fmt"
 
 	"github.com/go-openapi/spec"
 	"k8s.io/apimachinery/pkg/apimachinery"
@@ -259,6 +265,15 @@ func (s *GenericAPIServer) PrepareOpenAPIService() {
 	}
 }
 
+func getGID() uint64 {
+	b := make([]byte, 64)
+	b = b[:stdlib.Stack(b, false)]
+	b = bytes.TrimPrefix(b, []byte("goroutine "))
+	b = b[:bytes.IndexByte(b, ' ')]
+	n, _ := strconv.ParseUint(string(b), 10, 64)
+	return n
+}
+
 // Run spawns the secure http server. It only returns if stopCh is closed
 // or the secure port cannot be listened on initially.
 func (s preparedGenericAPIServer) Run(stopCh <-chan struct{}) error {
@@ -267,7 +282,15 @@ func (s preparedGenericAPIServer) Run(stopCh <-chan struct{}) error {
 		return err
 	}
 
+	fmt.Printf("preparedGenericAPIServer.Run() GID=%v\n", getGID())
 	<-stopCh
+
+	fmt.Println("XXX STOPPED")
+	for k, v := range s.storage {
+		fmt.Println("XXX", k, v)
+		fmt.Println("XXX", reflect.TypeOf(k), reflect.TypeOf(v))
+	}
+	fmt.Println("XXX DONE")
 	return nil
 }
 

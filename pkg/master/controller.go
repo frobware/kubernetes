@@ -127,10 +127,12 @@ func (c *Controller) Start() {
 		// If we fail to repair cluster IPs apiserver is useless. We should restart and retry.
 		glog.Fatalf("Unable to perform initial IP allocation check: %v", err)
 	}
+
 	if err := repairNodePorts.RunOnce(); err != nil {
 		// If we fail to repair node ports apiserver is useless. We should restart and retry.
 		glog.Fatalf("Unable to perform initial service nodePort check: %v", err)
 	}
+
 	// Service definition is reconciled during first run to correct port and type per expectations.
 	if err := c.UpdateKubernetesService(true); err != nil {
 		glog.Errorf("Unable to perform initial Kubernetes service initialization: %v", err)
@@ -166,6 +168,9 @@ func (c *Controller) RunKubernetesService(ch chan struct{}) {
 
 // UpdateKubernetesService attempts to update the default Kube service.
 func (c *Controller) UpdateKubernetesService(reconcile bool) error {
+	fmt.Println("\nUpdateKubernetesService")
+	epoch := time.Now()
+	then := time.Now()
 	// Update service & endpoint records.
 	// TODO: when it becomes possible to change this stuff,
 	// stop polling and start watching.
@@ -174,21 +179,40 @@ func (c *Controller) UpdateKubernetesService(reconcile bool) error {
 		return err
 	}
 
+	fmt.Println("AAA", time.Since(then))
+	then = time.Now()
+
 	servicePorts, serviceType := createPortAndServiceSpec(c.ServicePort, c.PublicServicePort, c.KubernetesServiceNodePort, "https", c.ExtraServicePorts)
+	fmt.Println("BBB", time.Since(then))
+	then = time.Now()
+
 	if err := c.CreateOrUpdateMasterServiceIfNeeded(kubernetesServiceName, c.ServiceIP, servicePorts, serviceType, reconcile); err != nil {
 		return err
 	}
+	fmt.Println("CCC", time.Since(then))
+	then = time.Now()
+
 	endpointPorts := createEndpointPortSpec(c.PublicServicePort, "https", c.ExtraEndpointPorts)
+	fmt.Println("XXX", endpointPorts)
+	fmt.Println("DDD", time.Since(then))
+	then = time.Now()
+
 	if err := c.EndpointReconciler.ReconcileEndpoints(kubernetesServiceName, c.PublicIP, endpointPorts, reconcile); err != nil {
+		panic("interesting")
 		return err
 	}
+	fmt.Println("EEE", time.Since(then))
+	then = time.Now()
+
+	fmt.Println("EPOCH", time.Since(epoch), "\n")
+
 	return nil
 }
 
 // CreateNamespaceIfNeeded will create a namespace if it doesn't already exist
 func (c *Controller) CreateNamespaceIfNeeded(ns string) error {
 	if _, err := c.NamespaceClient.Namespaces().Get(ns, metav1.GetOptions{}); err == nil {
-		// the namespace already exists
+		// the namespace alrezady exists
 		return nil
 	}
 	newNs := &api.Namespace{

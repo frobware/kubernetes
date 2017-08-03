@@ -297,6 +297,7 @@ func (r *crdHandler) getServingInfoFor(crd *apiextensions.CustomResourceDefiniti
 			kind,
 		),
 		r.restOptionsGetter,
+		nil,
 	)
 
 	selfLinkPrefix := ""
@@ -479,7 +480,7 @@ type CRDRESTOptionsGetter struct {
 	DeleteCollectionWorkers int
 }
 
-func (t CRDRESTOptionsGetter) GetRESTOptions(resource schema.GroupResource) (generic.RESTOptions, error) {
+func (t CRDRESTOptionsGetter) GetRESTOptions(resource schema.GroupResource, stopCh <-chan struct{}) (generic.RESTOptions, error) {
 	ret := generic.RESTOptions{
 		StorageConfig:           &t.StorageConfig,
 		Decorator:               generic.UndecoratedStorage,
@@ -488,7 +489,7 @@ func (t CRDRESTOptionsGetter) GetRESTOptions(resource schema.GroupResource) (gen
 		ResourcePrefix:          resource.Group + "/" + resource.Resource,
 	}
 	if t.EnableWatchCache {
-		ret.Decorator = genericregistry.StorageWithCacher(t.DefaultWatchCacheSize)
+		ret.Decorator = genericregistry.StorageWithCacher(t.DefaultWatchCacheSize, stopCh)
 	}
 	return ret, nil
 }

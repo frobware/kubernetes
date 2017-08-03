@@ -16,6 +16,7 @@ package etcdserver
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -162,6 +163,7 @@ func (c *ServerConfig) print(initial bool) {
 	if c.DedicatedWALDir != "" {
 		plog.Infof("dedicated WAL dir = %s", c.DedicatedWALDir)
 	}
+	plog.Infof("PID = %v", os.Getpid())
 	plog.Infof("heartbeat = %dms", c.TickMs)
 	plog.Infof("election = %dms", c.ElectionTicks*int(c.TickMs))
 	plog.Infof("snapshot count = %d", c.SnapCount)

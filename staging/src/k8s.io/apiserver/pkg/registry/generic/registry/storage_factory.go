@@ -26,7 +26,7 @@ import (
 )
 
 // Creates a cacher based given storageConfig.
-func StorageWithCacher(defaultCapacity int) generic.StorageDecorator {
+func StorageWithCacher(defaultCapacity int, stopCh <-chan struct{}) generic.StorageDecorator {
 	return func(
 		copier runtime.ObjectCopier,
 		storageConfig *storagebackend.Config,
@@ -36,8 +36,8 @@ func StorageWithCacher(defaultCapacity int) generic.StorageDecorator {
 		keyFunc func(obj runtime.Object) (string, error),
 		newListFunc func() runtime.Object,
 		getAttrsFunc storage.AttrFunc,
-		triggerFunc storage.TriggerPublisherFunc) (storage.Interface, factory.DestroyFunc) {
-
+		triggerFunc storage.TriggerPublisherFunc,
+		stopCh <-chan struct{}) (storage.Interface, factory.DestroyFunc) {
 		capacity := defaultCapacity
 		if requestedSize != nil && *requestedSize == 0 {
 			panic("StorageWithCacher must not be called with zero cache size")
@@ -46,7 +46,7 @@ func StorageWithCacher(defaultCapacity int) generic.StorageDecorator {
 			capacity = *requestedSize
 		}
 
-		s, d := generic.NewRawStorage(storageConfig)
+		s, d := generic.NewRawStorage(storageConfig, stopCh)
 		// TODO: we would change this later to make storage always have cacher and hide low level KV layer inside.
 		// Currently it has two layers of same storage interface -- cacher and low level kv.
 		cacherConfig := storage.CacherConfig{

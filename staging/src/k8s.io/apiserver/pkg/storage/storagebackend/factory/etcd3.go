@@ -17,6 +17,8 @@ limitations under the License.
 package factory
 
 import (
+	"runtime/debug"
+
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/pkg/transport"
 	"golang.org/x/net/context"
@@ -27,7 +29,8 @@ import (
 	"k8s.io/apiserver/pkg/storage/value"
 )
 
-func newETCD3Storage(c storagebackend.Config) (storage.Interface, DestroyFunc, error) {
+func newETCD3Storage(c storagebackend.Config, stopCh <-chan struct{}) (storage.Interface, DestroyFunc, error) {
+	debug.PrintStack()
 	tlsInfo := transport.TLSInfo{
 		CertFile: c.CertFile,
 		KeyFile:  c.KeyFile,

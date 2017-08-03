@@ -17,10 +17,12 @@ limitations under the License.
 package framework
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	goruntime "runtime"
 	"strconv"
 	"sync"
@@ -174,6 +176,31 @@ func (h *MasterHolder) SetMaster(m *master.Master) {
 	close(h.Initialized)
 }
 
+// Match Test<XXX> func name in a package specifier.
+//
+// For example, it will match TestWithLinksButNoAssets in:
+//   github.com/frobware/grawler_test.TestWithLinksButNoAssets
+var testNameRegexp = regexp.MustCompile(`\.(Test[\p{L}_\p{N}]+)$`)
+
+// Returns the name of the TestXXX function from the call stack.
+func testName() string {
+	pc := make([]uintptr, 32)
+	n := goruntime.Callers(0, pc)
+
+	for i := 0; i < n; i++ {
+		name := goruntime.FuncForPC(pc[i]).Name()
+		matches := testNameRegexp.FindStringSubmatch(name)
+
+		if matches == nil {
+			continue
+		}
+
+		return matches[1]
+	}
+
+	panic("test name could not be discovered; increase stack depth?")
+}
+
 // startMasterOrDie starts a kubernetes master and an httpserver to handle api requests
 func startMasterOrDie(masterConfig *master.Config, incomingServer *httptest.Server, masterReceiver MasterReceiver) (*master.Master, *httptest.Server, CloseFunc) {
 	var m *master.Master
@@ -272,6 +299,8 @@ func startMasterOrDie(masterConfig *master.Config, incomingServer *httptest.Serv
 		closeFn()
 		glog.Fatal(err)
 	}
+	p := time.Now()
+
 	err = wait.PollImmediate(100*time.Millisecond, 30*time.Second, func() (bool, error) {
 		result := privilegedClient.Get().AbsPath("/healthz").Do()
 		status := 0
@@ -281,6 +310,7 @@ func startMasterOrDie(masterConfig *master.Config, incomingServer *httptest.Serv
 		}
 		return false, nil
 	})
+	fmt.Printf("%s /healthz time %v\n", testName(), time.Since(p))
 	if err != nil {
 		closeFn()
 		glog.Fatal(err)

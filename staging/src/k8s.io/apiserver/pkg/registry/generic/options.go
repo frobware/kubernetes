@@ -33,12 +33,12 @@ type RESTOptions struct {
 }
 
 // Implement RESTOptionsGetter so that RESTOptions can directly be used when available (i.e. tests)
-func (opts RESTOptions) GetRESTOptions(schema.GroupResource) (RESTOptions, error) {
+func (opts RESTOptions) GetRESTOptions(schema.GroupResource, <-chan struct{}) (RESTOptions, error) {
 	return opts, nil
 }
 
 type RESTOptionsGetter interface {
-	GetRESTOptions(resource schema.GroupResource) (RESTOptions, error)
+	GetRESTOptions(resource schema.GroupResource, stopCh <-chan struct{}) (RESTOptions, error)
 }
 
 // StoreOptions is set of configuration options used to complete generic registries.

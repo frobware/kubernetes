@@ -42,16 +42,16 @@ import (
 	servicestore "k8s.io/kubernetes/pkg/registry/core/service/storage"
 )
 
-func installCoreAPIs(s *options.ServerRunOptions, g *genericapiserver.GenericAPIServer, optsGetter generic.RESTOptionsGetter, apiResourceConfigSource storage.APIResourceConfigSource) {
+func installCoreAPIs(s *options.ServerRunOptions, g *genericapiserver.GenericAPIServer, optsGetter generic.RESTOptionsGetter, apiResourceConfigSource storage.APIResourceConfigSource, stopCh <-chan struct{}) {
 	servicesStorageFn := func() map[string]rest.Storage {
-		serviceStore, serviceStatusStore := servicestore.NewREST(optsGetter)
+		serviceStore, serviceStatusStore := servicestore.NewREST(optsGetter, stopCh)
 		return map[string]rest.Storage{
 			"services":        serviceStore,
 			"services/status": serviceStatusStore,
 		}
 	}
 	namespacesStorageFn := func() map[string]rest.Storage {
-		namespaceStore, namespaceStatusStore, namespaceFinalizeStore := namespacestore.NewREST(optsGetter)
+		namespaceStore, namespaceStatusStore, namespaceFinalizeStore := namespacestore.NewREST(optsGetter, stopCh)
 		return map[string]rest.Storage{
 			"namespaces":          namespaceStore,
 			"namespaces/status":   namespaceStatusStore,
@@ -59,19 +59,19 @@ func installCoreAPIs(s *options.ServerRunOptions, g *genericapiserver.GenericAPI
 		}
 	}
 	secretsStorageFn := func() map[string]rest.Storage {
-		secretStore := secretstore.NewREST(optsGetter)
+		secretStore := secretstore.NewREST(optsGetter, stopCh)
 		return map[string]rest.Storage{
 			"secrets": secretStore,
 		}
 	}
 	configmapsStorageFn := func() map[string]rest.Storage {
-		configMapStore := configmapstore.NewREST(optsGetter)
+		configMapStore := configmapstore.NewREST(optsGetter, stopCh)
 		return map[string]rest.Storage{
 			"configmaps": configMapStore,
 		}
 	}
 	eventsStorageFn := func() map[string]rest.Storage {
-		eventStore := eventstore.NewREST(optsGetter, uint64(s.EventTTL.Seconds()))
+		eventStore := eventstore.NewREST(optsGetter, uint64(s.EventTTL.Seconds()), stopCh)
 		return map[string]rest.Storage{
 			"events": eventStore,
 		}

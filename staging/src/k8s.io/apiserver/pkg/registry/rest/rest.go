@@ -260,6 +260,10 @@ type StandardStorage interface {
 	Watcher
 }
 
+type Nuker interface {
+	Nuke() error
+}
+
 // Redirector know how to return a remote resource's location.
 type Redirector interface {
 	// ResourceLocation should return the remote location of the given resource, and an optional transport to use to request it, or an error.

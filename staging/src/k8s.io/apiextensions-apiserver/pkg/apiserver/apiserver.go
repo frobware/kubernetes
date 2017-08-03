@@ -114,7 +114,7 @@ func (c *Config) SkipComplete() completedConfig {
 }
 
 // New returns a new instance of CustomResourceDefinitions from the given config.
-func (c completedConfig) New(delegationTarget genericapiserver.DelegationTarget) (*CustomResourceDefinitions, error) {
+func (c completedConfig) New(delegationTarget genericapiserver.DelegationTarget, stopCh <-chan struct{}) (*CustomResourceDefinitions, error) {
 	genericServer, err := c.Config.GenericConfig.SkipComplete().New("apiextensions-apiserver", delegationTarget) // completion is done in Complete, no need for a second time
 	if err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ func (c completedConfig) New(delegationTarget genericapiserver.DelegationTarget)
 
 	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(apiextensions.GroupName, registry, Scheme, metav1.ParameterCodec, Codecs)
 	apiGroupInfo.GroupMeta.GroupVersion = v1beta1.SchemeGroupVersion
-	customResourceDefintionStorage := customresourcedefinition.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter)
+	customResourceDefintionStorage := customresourcedefinition.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, stopCh)
 	v1beta1storage := map[string]rest.Storage{}
 	v1beta1storage["customresourcedefinitions"] = customResourceDefintionStorage
 	v1beta1storage["customresourcedefinitions/status"] = customresourcedefinition.NewStatusREST(Scheme, customResourceDefintionStorage)
