@@ -296,3 +296,5 @@ func PostStartHook(hookContext genericapiserver.PostStartHookContext) error {
 func (p RESTStorageProvider) GroupName() string {
 	return rbac.GroupName
 }
+
+func (p RESTStorageProvider) Destroy() {}
