@@ -37,7 +37,7 @@ func newStorage(t *testing.T) (*REST, *etcdtesting.EtcdTestServer) {
 		DeleteCollectionWorkers: 1,
 		ResourcePrefix:          "secrets",
 	}
-	return NewREST(restOptions), server
+	return NewREST(restOptions, nil), server
 }
 
 func validNewSecret(name string) *api.Secret {

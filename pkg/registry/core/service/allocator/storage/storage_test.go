@@ -32,7 +32,7 @@ import (
 func newStorage(t *testing.T) (*Etcd, *etcdtesting.EtcdTestServer, allocator.Interface, *storagebackend.Config) {
 	etcdStorage, server := registrytest.NewEtcdStorage(t, "")
 	mem := allocator.NewAllocationMap(100, "rangeSpecValue")
-	etcd := NewEtcd(mem, "/ranges/serviceips", api.Resource("serviceipallocations"), etcdStorage)
+	etcd := NewEtcd(mem, "/ranges/serviceips", api.Resource("serviceipallocations"), etcdStorage, nil)
 	return etcd, server, mem, etcdStorage
 }
 
@@ -92,7 +92,7 @@ func TestStore(t *testing.T) {
 	}
 
 	other = allocator.NewAllocationMap(100, "rangeSpecValue")
-	otherStorage := NewEtcd(other, "/ranges/serviceips", api.Resource("serviceipallocations"), config)
+	otherStorage := NewEtcd(other, "/ranges/serviceips", api.Resource("serviceipallocations"), config, nil)
 	if ok, err := otherStorage.Allocate(2); ok || err != nil {
 		t.Fatal(err)
 	}

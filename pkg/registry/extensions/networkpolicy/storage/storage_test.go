@@ -39,7 +39,7 @@ func newStorage(t *testing.T) (*REST, *etcdtesting.EtcdTestServer) {
 		DeleteCollectionWorkers: 1,
 		ResourcePrefix:          "networkpolicies",
 	}
-	return NewREST(restOptions), server
+	return NewREST(restOptions, nil), server
 }
 
 // createNetworkPolicy is a helper function that returns a NetworkPolicy with the updated resource version.

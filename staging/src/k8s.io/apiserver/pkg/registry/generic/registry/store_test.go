@@ -115,7 +115,7 @@ func (t *testRESTStrategy) ValidateUpdate(ctx genericapirequest.Context, obj, ol
 func (t *testRESTStrategy) Canonicalize(obj runtime.Object) {}
 
 func NewTestGenericStoreRegistry(t *testing.T) (factory.DestroyFunc, *Store) {
-	return newTestGenericStoreRegistry(t, scheme, false)
+	return newTestGenericStoreRegistry(t, scheme, false, nil)
 }
 
 func getPodAttrs(obj runtime.Object) (labels.Set, fields.Set, bool, error) {
@@ -236,7 +236,7 @@ func TestStoreListResourceVersion(t *testing.T) {
 	}
 	ctx := genericapirequest.WithNamespace(genericapirequest.NewContext(), "test")
 
-	destroyFunc, registry := newTestGenericStoreRegistry(t, scheme, true)
+	destroyFunc, registry := newTestGenericStoreRegistry(t, scheme, true, nil)
 	defer destroyFunc()
 
 	obj, err := registry.Create(ctx, fooPod, false)

@@ -38,7 +38,7 @@ func newStorage(t *testing.T) (*REST, *StatusREST, *etcdtesting.EtcdTestServer) 
 		DeleteCollectionWorkers: 1,
 		ResourcePrefix:          "daemonsets",
 	}
-	daemonSetStorage, statusStorage := NewREST(restOptions)
+	daemonSetStorage, statusStorage := NewREST(restOptions, nil)
 	return daemonSetStorage, statusStorage, server
 }
 

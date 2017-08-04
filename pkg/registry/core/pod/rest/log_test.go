@@ -30,7 +30,7 @@ import (
 func TestPodLogValidates(t *testing.T) {
 	config, server := registrytest.NewEtcdStorage(t, "")
 	defer server.Terminate(t)
-	s, destroyFunc := generic.NewRawStorage(config)
+	s, destroyFunc := generic.NewRawStorage(config, nil)
 	defer destroyFunc()
 	store := &genericregistry.Store{
 		Storage: s,

@@ -45,10 +45,10 @@ func newStorage(t *testing.T) (*etcdtesting.EtcdTestServer, ipallocator.Interfac
 	storage := ipallocator.NewAllocatorCIDRRange(cidr, func(max int, rangeSpec string) allocator.Interface {
 		mem := allocator.NewAllocationMap(max, rangeSpec)
 		backing = mem
-		etcd := allocatorstore.NewEtcd(mem, "/ranges/serviceips", api.Resource("serviceipallocations"), etcdStorage)
+		etcd := allocatorstore.NewEtcd(mem, "/ranges/serviceips", api.Resource("serviceipallocations"), etcdStorage, nil)
 		return etcd
 	})
-	s, d := generic.NewRawStorage(etcdStorage)
+	s, d := generic.NewRawStorage(etcdStorage, nil)
 	destroyFunc := func() {
 		d()
 		server.Terminate(t)

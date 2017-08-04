@@ -40,7 +40,7 @@ func newStorage(t *testing.T) (*REST, *StatusREST, *etcdtesting.EtcdTestServer) 
 		DeleteCollectionWorkers: 1,
 		ResourcePrefix:          "horizontalpodautoscalers",
 	}
-	horizontalPodAutoscalerStorage, statusStorage := NewREST(restOptions)
+	horizontalPodAutoscalerStorage, statusStorage := NewREST(restOptions, nil)
 	return horizontalPodAutoscalerStorage, statusStorage, server
 }
 

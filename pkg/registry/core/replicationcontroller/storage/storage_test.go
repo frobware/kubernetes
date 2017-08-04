@@ -48,7 +48,7 @@ func newStorage(t *testing.T) (ControllerStorage, *etcdtesting.EtcdTestServer) {
 		DeleteCollectionWorkers: 1,
 		ResourcePrefix:          "replicationcontrollers",
 	}
-	storage := NewStorage(restOptions)
+	storage := NewStorage(restOptions, nil)
 	return storage, server
 }
 

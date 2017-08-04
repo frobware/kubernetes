@@ -42,7 +42,7 @@ func newStorage(t *testing.T) (*REST, *StatusREST, *etcdtesting.EtcdTestServer) 
 		DeleteCollectionWorkers: 1,
 		ResourcePrefix:          "persistentvolumeclaims",
 	}
-	persistentVolumeClaimStorage, statusStorage := NewREST(restOptions)
+	persistentVolumeClaimStorage, statusStorage := NewREST(restOptions, nil)
 	return persistentVolumeClaimStorage, statusStorage, server
 }
 

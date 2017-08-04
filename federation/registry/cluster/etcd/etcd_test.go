@@ -38,7 +38,7 @@ func newStorage(t *testing.T) (*REST, *etcdtesting.EtcdTestServer) {
 		DeleteCollectionWorkers: 1,
 		ResourcePrefix:          "clusters",
 	}
-	storage, _ := NewREST(restOptions)
+	storage, _ := NewREST(restOptions, nil)
 	return storage, server
 }
 

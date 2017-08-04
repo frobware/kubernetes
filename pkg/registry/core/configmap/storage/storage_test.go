@@ -37,7 +37,7 @@ func newStorage(t *testing.T) (*REST, *etcdtesting.EtcdTestServer) {
 		DeleteCollectionWorkers: 1,
 		ResourcePrefix:          "configmaps",
 	}
-	return NewREST(restOptions), server
+	return NewREST(restOptions, nil), server
 }
 
 func validNewConfigMap() *api.ConfigMap {

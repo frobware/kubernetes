@@ -159,7 +159,7 @@ func newStorage(t *testing.T) (*REST, *etcdtesting.EtcdTestServer) {
 		Decorator:               generic.UndecoratedStorage,
 		DeleteCollectionWorkers: 1,
 		ResourcePrefix:          "controllerrevisions"}
-	storage := NewREST(restOptions)
+	storage := NewREST(restOptions, nil)
 	return storage, server
 }
 

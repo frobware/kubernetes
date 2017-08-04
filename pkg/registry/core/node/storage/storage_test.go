@@ -39,7 +39,7 @@ func newStorage(t *testing.T) (*REST, *etcdtesting.EtcdTestServer) {
 		DeleteCollectionWorkers: 1,
 		ResourcePrefix:          "nodes",
 	}
-	storage, err := NewStorage(restOptions, kubeletclient.KubeletClientConfig{}, nil)
+	storage, err := NewStorage(restOptions, kubeletclient.KubeletClientConfig{}, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

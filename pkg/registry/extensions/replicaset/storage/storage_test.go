@@ -40,7 +40,7 @@ const defaultReplicas = 100
 func newStorage(t *testing.T) (*ReplicaSetStorage, *etcdtesting.EtcdTestServer) {
 	etcdStorage, server := registrytest.NewEtcdStorage(t, "extensions")
 	restOptions := generic.RESTOptions{StorageConfig: etcdStorage, Decorator: generic.UndecoratedStorage, DeleteCollectionWorkers: 1, ResourcePrefix: "replicasets"}
-	replicaSetStorage := NewStorage(restOptions)
+	replicaSetStorage := NewStorage(restOptions, nil)
 	return &replicaSetStorage, server
 }
 

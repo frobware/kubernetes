@@ -41,7 +41,7 @@ func newStorage(t *testing.T) (*REST, *StatusREST, *etcdtesting.EtcdTestServer) 
 		DeleteCollectionWorkers: 1,
 		ResourcePrefix:          "resourcequotas",
 	}
-	resourceQuotaStorage, statusStorage := NewREST(restOptions)
+	resourceQuotaStorage, statusStorage := NewREST(restOptions, nil)
 	return resourceQuotaStorage, statusStorage, server
 }
 

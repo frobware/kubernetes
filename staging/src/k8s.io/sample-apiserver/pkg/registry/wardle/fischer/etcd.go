@@ -25,7 +25,7 @@ import (
 )
 
 // NewREST returns a RESTStorage object that will work against API services.
-func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*registry.REST, error) {
+func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter, stopCh <-chan struct{}) (*registry.REST, error) {
 	strategy := NewStrategy(scheme)
 
 	store := &genericregistry.Store{

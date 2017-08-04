@@ -39,7 +39,7 @@ func newStorage(t *testing.T) (*REST, *etcdtesting.EtcdTestServer) {
 		DeleteCollectionWorkers: 1,
 		ResourcePrefix:          "podsecuritypolicies",
 	}
-	return NewREST(restOptions), server
+	return NewREST(restOptions, nil), server
 }
 
 func validNewPodSecurityPolicy() *extensions.PodSecurityPolicy {

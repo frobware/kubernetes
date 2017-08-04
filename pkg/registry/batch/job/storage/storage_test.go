@@ -38,7 +38,7 @@ func newStorage(t *testing.T) (*JobStorage, *etcdtesting.EtcdTestServer) {
 		DeleteCollectionWorkers: 1,
 		ResourcePrefix:          "jobs",
 	}
-	jobStorage := NewStorage(restOptions)
+	jobStorage := NewStorage(restOptions, nil)
 	return &jobStorage, server
 }
 
