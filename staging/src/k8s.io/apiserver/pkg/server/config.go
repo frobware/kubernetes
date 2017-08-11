@@ -426,6 +426,7 @@ func (c completedConfig) New(name string, delegationTarget DelegationTarget, sto
 
 	go func() {
 		<-stopCh
+		fmt.Printf("STOPPING APISERVER %p\n", s)
 		s.DESTROY()
 	}()
 

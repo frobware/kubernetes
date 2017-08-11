@@ -317,18 +317,18 @@ func (s *GenericAPIServer) EffectiveSecurePort() int {
 	return s.effectiveSecurePort
 }
 
+// frobware(UNDO)
+var stopLock sync.RWMutex
+
 func (s *GenericAPIServer) DESTROY() {
-	destroyed := map[rest.Storage]bool{}
+	stopLock.Lock()
+	defer stopLock.Unlock()
 
 	for i := range s.apiGroupInfo {
 		fmt.Printf("DESTROY [%v] [%p] - DESTROY %+v\n", i, s, s.apiGroupInfo[i].VersionedResourcesStorageMap)
 		for _, v := range s.apiGroupInfo[i].VersionedResourcesStorageMap {
 			for _, v2 := range v {
-				if destroyed[v2] {
-					continue
-				}
 				v2.DESTROY()
-				destroyed[v2] = true
 			}
 		}
 	}

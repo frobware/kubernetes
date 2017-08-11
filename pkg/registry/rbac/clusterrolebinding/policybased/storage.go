@@ -18,8 +18,6 @@ limitations under the License.
 package policybased
 
 import (
-	"fmt"
-
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -92,6 +90,4 @@ func (s *Storage) Update(ctx genericapirequest.Context, name string, obj rest.Up
 	return s.StandardStorage.Update(ctx, name, nonEscalatingInfo)
 }
 
-func (s *Storage) DESTROY() {
-	fmt.Printf("ZZX %p\n", s)
-}
+func (s *Storage) DESTROY() {}
