@@ -320,11 +320,11 @@ func (s *GenericAPIServer) EffectiveSecurePort() int {
 }
 
 // frobware(UNDO)
-var stopLock sync.RWMutex
+// var stopLock sync.RWMutex
 
-func (s *GenericAPIServer) DESTROY() {
-	stopLock.Lock()
-	defer stopLock.Unlock()
+func (s *GenericAPIServer) destroyStorage() {
+	// stopLock.Lock()
+	// defer stopLock.Unlock()
 
 	for i := range s.apiGroupInfo {
 		fmt.Printf("DESTROY [%v] [%p] - DESTROY %+v\n", i, s, s.apiGroupInfo[i].VersionedResourcesStorageMap)
@@ -379,7 +379,7 @@ func (s *GenericAPIServer) InstallLegacyAPIGroup(apiPrefix string, apiGroupInfo 
 	if s.destroy_ch != nil {
 		go func() {
 			<-s.destroy_ch
-			s.DESTROY()
+			s.destroyStorage()
 		}()
 	}
 
@@ -433,7 +433,7 @@ func (s *GenericAPIServer) InstallAPIGroup(apiGroupInfo *APIGroupInfo) error {
 	if s.destroy_ch != nil {
 		go func() {
 			<-s.destroy_ch
-			s.DESTROY()
+			s.destroyStorage()
 		}()
 	}
 

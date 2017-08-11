@@ -629,12 +629,8 @@ func (c *Cacher) isStopped() bool {
 func (c *Cacher) Stop() {
 	c.stopLock.Lock()
 	c.stopped = true
-	// frobware(UNDO)
-	if c.stopCh != nil {
-		close(c.stopCh)
-		c.stopCh = nil
-	}
 	c.stopLock.Unlock()
+	close(c.stopCh)
 	c.stopWg.Wait()
 }
 

@@ -226,6 +226,7 @@ func (e *Store) New() runtime.Object {
 }
 
 func (e *Store) DESTROY() {
+	fmt.Printf("DESTROYSTORE %p\n", e)
 	if e.DestroyFunc != nil {
 		e.DestroyFunc()
 		e.DestroyFunc = nil

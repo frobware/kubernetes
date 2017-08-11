@@ -424,12 +424,6 @@ func (c completedConfig) New(name string, delegationTarget DelegationTarget, sto
 		apiGroupInfo: []*APIGroupInfo{},
 	}
 
-	go func() {
-		<-stopCh
-		fmt.Printf("STOPPING APISERVER %p\n", s)
-		s.DESTROY()
-	}()
-
 	fmt.Printf("RETURNING APISERVER %p\n", s)
 
 	for k, v := range delegationTarget.PostStartHooks() {
