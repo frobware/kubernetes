@@ -1357,7 +1357,8 @@ func (e *Store) CompleteWithOptions(options *generic.StoreOptions) error {
 			keyFunc,
 			e.NewListFunc,
 			options.AttrFunc,
-			triggerFunc)
+			triggerFunc,
+		)
 	}
 
 	return nil

@@ -18,7 +18,6 @@ package testing
 
 import (
 	"fmt"
-	"runtime"
 	"testing"
 	"time"
 
@@ -229,27 +228,4 @@ func crdExistsInDiscovery(client apiextensionsclientset.Interface, crd *apiexten
 		}
 	}
 	return false, nil
-}
-
-func stackTrace() string {
-	stack := make([]byte, 8196)
-	size := 0
-	for {
-		size = runtime.Stack(stack, true)
-		if size < len(stack) {
-			break
-		}
-		stack = make([]byte, len(stack)*2)
-	}
-	return string(stack[0:size])
-	//	fmt.Printf("%s\n", string(stack[0:size]))
-}
-
-func TestTeardown(t *testing.T) {
-	fmt.Println("AAA Starting test with ", runtime.NumGoroutine())
-	_, tearDown := StartTestServerOrDie(t)
-	fmt.Println("AAA TEST FINISHED", runtime.NumGoroutine())
-	// time.Sleep(120 * time.Minute)
-	tearDown()
-	fmt.Println("AAA teardown() FINISHED", runtime.NumGoroutine())
 }

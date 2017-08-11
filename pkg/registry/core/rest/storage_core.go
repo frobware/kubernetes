@@ -139,7 +139,8 @@ func (c LegacyRESTStorageProvider) NewLegacyRESTStorage(restOptionsGetter generi
 		restOptionsGetter,
 		nodeStorage.KubeletConnectionInfo,
 		c.ProxyTransport,
-		podDisruptionClient)
+		podDisruptionClient,
+	)
 
 	serviceRESTStorage, serviceStatusStorage := servicestore.NewREST(restOptionsGetter)
 	serviceRegistry := service.NewRegistry(serviceRESTStorage)

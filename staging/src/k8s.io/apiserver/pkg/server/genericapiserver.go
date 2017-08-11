@@ -110,6 +110,9 @@ type GenericAPIServer struct {
 	// external (public internet) URLs for this GenericAPIServer.
 	ExternalAddress string
 
+	// storage contains the RESTful endpoints exposed by this GenericAPIServer
+	storage map[string]rest.Storage
+
 	// Serializer controls how common API objects not in a group/version prefix are serialized for this server.
 	// Individual APIGroups may define their own serializers.
 	Serializer runtime.NegotiatedSerializer
@@ -270,7 +273,6 @@ func (s preparedGenericAPIServer) Run(stopCh <-chan struct{}) error {
 	}
 
 	<-stopCh
-
 	return nil
 }
 

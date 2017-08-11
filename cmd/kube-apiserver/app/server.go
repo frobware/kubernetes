@@ -519,7 +519,8 @@ func BuildAuthenticator(s *options.ServerRunOptions, storageFactory serverstorag
 			storageConfigServiceAccounts,
 			storageFactory.ResourcePrefix(api.Resource("serviceaccounts")),
 			storageConfigSecrets,
-			storageFactory.ResourcePrefix(api.Resource("secrets")))
+			storageFactory.ResourcePrefix(api.Resource("secrets")),
+		)
 	}
 	if client == nil || reflect.ValueOf(client).IsNil() {
 		// TODO: Remove check once client can never be nil.
