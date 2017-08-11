@@ -18,6 +18,7 @@ package registry
 
 import (
 	"fmt"
+	"sync"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apiserver/pkg/registry/generic"
@@ -64,11 +65,17 @@ func StorageWithCacher(defaultCapacity int) generic.StorageDecorator {
 			TriggerPublisherFunc: triggerFunc,
 			Codec:                storageConfig.Codec,
 		}
-		fmt.Printf("CACHER_WITH_STORAGE %p\n", s)
 		cacher := storage.NewCacherFromConfig(cacherConfig)
+
+		once := sync.Once{}
+
 		destroyFunc := func() {
-			cacher.Stop()
-			d()
+			fmt.Printf("DESTROY_FUNC cacher=%p storage=%p, destroy_func=%p\n", cacher, s, d)
+			once.Do(func() {
+				fmt.Printf("ABOUT_TO CACHER_STOP cacher=%p\n", cacher)
+				cacher.Stop()
+				d()
+			})
 		}
 
 		return cacher, destroyFunc

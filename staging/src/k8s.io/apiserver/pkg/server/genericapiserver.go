@@ -472,7 +472,7 @@ func destroyStorage(apiGroupInfo *APIGroupInfo) {
 			if destroyed[store] {
 				continue
 			}
-			destroyed[store] = true
+			// destroyed[store] = true
 			fmt.Println("DESTROY", k, store)
 			store.DESTROY()
 		}

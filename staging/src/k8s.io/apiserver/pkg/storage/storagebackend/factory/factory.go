@@ -37,7 +37,7 @@ func Create(c storagebackend.Config) (storage.Interface, DestroyFunc, error) {
 		// - Honor "https" scheme to support secure connection in gRPC.
 		// - Support non-quorum read.
 		x, d, err := newETCD3Storage(c)
-		fmt.Printf("CREATESTORE %p\n", x)
+		fmt.Printf("CREATESTORE store=%p destroyfunc=%p\n", x, d)
 		return x, d, err
 	default:
 		return nil, nil, fmt.Errorf("unknown storage type: %s", c.Type)

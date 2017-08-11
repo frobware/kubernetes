@@ -488,7 +488,7 @@ func (t CRDRESTOptionsGetter) GetRESTOptions(resource schema.GroupResource) (gen
 		ResourcePrefix:          resource.Group + "/" + resource.Resource,
 	}
 	//disablecache
-	if false && t.EnableWatchCache {
+	if t.EnableWatchCache {
 		ret.Decorator = genericregistry.StorageWithCacher(t.DefaultWatchCacheSize)
 	}
 	return ret, nil
