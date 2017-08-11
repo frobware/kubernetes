@@ -17,6 +17,8 @@ limitations under the License.
 package registry
 
 import (
+	"fmt"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apiserver/pkg/registry/generic"
 	"k8s.io/apiserver/pkg/storage"
@@ -62,6 +64,7 @@ func StorageWithCacher(defaultCapacity int) generic.StorageDecorator {
 			TriggerPublisherFunc: triggerFunc,
 			Codec:                storageConfig.Codec,
 		}
+		fmt.Printf("CACHER_WITH_STORAGE %p\n", s)
 		cacher := storage.NewCacherFromConfig(cacherConfig)
 		destroyFunc := func() {
 			cacher.Stop()

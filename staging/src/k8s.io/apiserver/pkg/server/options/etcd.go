@@ -148,6 +148,7 @@ func (f *SimpleRestOptionsFactory) GetRESTOptions(resource schema.GroupResource)
 		DeleteCollectionWorkers: f.Options.DeleteCollectionWorkers,
 		ResourcePrefix:          resource.Group + "/" + resource.Resource,
 	}
+	//disablecache
 	if false && f.Options.EnableWatchCache {
 		ret.Decorator = genericregistry.StorageWithCacher(f.Options.DefaultWatchCacheSize)
 	}
@@ -172,6 +173,7 @@ func (f *storageFactoryRestOptionsFactory) GetRESTOptions(resource schema.GroupR
 		EnableGarbageCollection: f.Options.EnableGarbageCollection,
 		ResourcePrefix:          f.StorageFactory.ResourcePrefix(resource),
 	}
+	//disablecache
 	if false && f.Options.EnableWatchCache {
 		ret.Decorator = genericregistry.StorageWithCacher(f.Options.DefaultWatchCacheSize)
 	}

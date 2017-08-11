@@ -156,8 +156,6 @@ type GenericAPIServer struct {
 
 	// Destroy ...
 	destroy_ch <-chan struct{}
-
-	apiGroupInfo []*APIGroupInfo
 }
 
 // DelegationTarget is an interface which allows for composition of API servers with top level handling that works
@@ -319,23 +317,6 @@ func (s *GenericAPIServer) EffectiveSecurePort() int {
 	return s.effectiveSecurePort
 }
 
-// frobware(UNDO)
-// var stopLock sync.RWMutex
-
-func (s *GenericAPIServer) destroyStorage() {
-	// stopLock.Lock()
-	// defer stopLock.Unlock()
-
-	for i := range s.apiGroupInfo {
-		fmt.Printf("DESTROY [%v] [%p] - DESTROY %+v\n", i, s, s.apiGroupInfo[i].VersionedResourcesStorageMap)
-		for _, v := range s.apiGroupInfo[i].VersionedResourcesStorageMap {
-			for _, v2 := range v {
-				v2.DESTROY()
-			}
-		}
-	}
-}
-
 // installAPIResources is a private method for installing the REST storage backing each api groupversionresource
 func (s *GenericAPIServer) installAPIResources(apiPrefix string, apiGroupInfo *APIGroupInfo) error {
 	for _, groupVersion := range apiGroupInfo.GroupMeta.GroupVersions {
@@ -374,14 +355,10 @@ func (s *GenericAPIServer) InstallLegacyAPIGroup(apiPrefix string, apiGroupInfo 
 	// Add a handler at /<apiPrefix> to enumerate the supported api versions.
 	s.Handler.GoRestfulContainer.Add(discovery.NewLegacyRootAPIHandler(s.discoveryAddresses, s.Serializer, apiPrefix, apiVersions, s.requestContextMapper).WebService())
 
-	s.apiGroupInfo = append(s.apiGroupInfo, apiGroupInfo)
-
-	if s.destroy_ch != nil {
-		go func() {
-			<-s.destroy_ch
-			s.destroyStorage()
-		}()
-	}
+	go func() {
+		<-s.destroy_ch
+		destroyStorage(apiGroupInfo)
+	}()
 
 	return nil
 }
@@ -428,14 +405,10 @@ func (s *GenericAPIServer) InstallAPIGroup(apiGroupInfo *APIGroupInfo) error {
 	s.DiscoveryGroupManager.AddGroup(apiGroup)
 	s.Handler.GoRestfulContainer.Add(discovery.NewAPIGroupHandler(s.Serializer, apiGroup, s.requestContextMapper).WebService())
 
-	s.apiGroupInfo = append(s.apiGroupInfo, apiGroupInfo)
-
-	if s.destroy_ch != nil {
-		go func() {
-			<-s.destroy_ch
-			s.destroyStorage()
-		}()
-	}
+	go func() {
+		<-s.destroy_ch
+		destroyStorage(apiGroupInfo)
+	}()
 
 	return nil
 }
@@ -488,5 +461,20 @@ func NewDefaultAPIGroupInfo(group string, registry *registered.APIRegistrationMa
 		Scheme:                 scheme,
 		ParameterCodec:         parameterCodec,
 		NegotiatedSerializer:   codecs,
+	}
+}
+
+func destroyStorage(apiGroupInfo *APIGroupInfo) {
+	destroyed := map[rest.Storage]bool{}
+
+	for _, m := range apiGroupInfo.VersionedResourcesStorageMap {
+		for k, store := range m {
+			if destroyed[store] {
+				continue
+			}
+			destroyed[store] = true
+			fmt.Println("DESTROY", k, store)
+			store.DESTROY()
+		}
 	}
 }

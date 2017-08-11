@@ -487,6 +487,7 @@ func (t CRDRESTOptionsGetter) GetRESTOptions(resource schema.GroupResource) (gen
 		DeleteCollectionWorkers: t.DeleteCollectionWorkers,
 		ResourcePrefix:          resource.Group + "/" + resource.Resource,
 	}
+	//disablecache
 	if false && t.EnableWatchCache {
 		ret.Decorator = genericregistry.StorageWithCacher(t.DefaultWatchCacheSize)
 	}

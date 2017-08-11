@@ -630,6 +630,7 @@ func (c *Cacher) Stop() {
 	c.stopLock.Lock()
 	c.stopped = true
 	c.stopLock.Unlock()
+	fmt.Printf("CLOSINGSTORECHANNEL %p\n", c.stopCh)
 	close(c.stopCh)
 	c.stopWg.Wait()
 }

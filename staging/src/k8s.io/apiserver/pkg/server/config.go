@@ -420,8 +420,7 @@ func (c completedConfig) New(name string, delegationTarget DelegationTarget, sto
 
 		enableAPIResponseCompression: c.EnableAPIResponseCompression,
 
-		destroy_ch:   stopCh,
-		apiGroupInfo: []*APIGroupInfo{},
+		destroy_ch: stopCh,
 	}
 
 	fmt.Printf("RETURNING APISERVER %p\n", s)
