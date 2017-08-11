@@ -634,7 +634,7 @@ func (c *Cacher) Stop() {
 		close(c.stopCh)
 		c.stopCh = nil
 	}
-	c.stopLock.UnLock()
+	c.stopLock.Unlock()
 	c.stopWg.Wait()
 }
 
