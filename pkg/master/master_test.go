@@ -141,7 +141,7 @@ func limitedAPIResourceConfigSource() *serverstorage.ResourceConfig {
 func newLimitedMaster(t *testing.T) (*Master, *etcdtesting.EtcdTestServer, Config, *assert.Assertions) {
 	etcdserver, config, assert := setUp(t)
 	config.APIResourceConfigSource = limitedAPIResourceConfigSource()
-	master, err := config.Complete().New(genericapiserver.EmptyDelegate)
+	master, err := config.Complete().New(genericapiserver.EmptyDelegate, nil)
 	if err != nil {
 		t.Fatalf("Error in bringing up the master: %v", err)
 	}
