@@ -52,7 +52,7 @@ func TestNewWithDelegate(t *testing.T) {
 		return fmt.Errorf("delegate failed healthcheck")
 	}))
 
-	delegateServer, err := delegateConfig.SkipComplete().New("test", EmptyDelegate)
+	delegateServer, err := delegateConfig.SkipComplete().New("test", EmptyDelegate, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -81,7 +81,7 @@ func TestNewWithDelegate(t *testing.T) {
 		return fmt.Errorf("wrapping failed healthcheck")
 	}))
 
-	wrappingServer, err := wrappingConfig.Complete().New("test", delegateServer)
+	wrappingServer, err := wrappingConfig.Complete().New("test", delegateServer, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

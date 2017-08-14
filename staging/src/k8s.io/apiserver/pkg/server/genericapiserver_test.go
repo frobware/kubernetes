@@ -114,7 +114,7 @@ func setUp(t *testing.T) (*etcdtesting.EtcdTestServer, Config, *assert.Assertion
 func newMaster(t *testing.T) (*GenericAPIServer, *etcdtesting.EtcdTestServer, Config, *assert.Assertions) {
 	etcdserver, config, assert := setUp(t)
 
-	s, err := config.Complete().New("test", EmptyDelegate)
+	s, err := config.Complete().New("test", EmptyDelegate, nil)
 	if err != nil {
 		t.Fatalf("Error in bringing up the server: %v", err)
 	}
@@ -146,7 +146,7 @@ func TestInstallAPIGroups(t *testing.T) {
 	config.LegacyAPIGroupPrefixes = sets.NewString("/apiPrefix")
 	config.DiscoveryAddresses = discovery.DefaultAddresses{DefaultAddress: "ExternalAddress"}
 
-	s, err := config.SkipComplete().New("test", EmptyDelegate)
+	s, err := config.SkipComplete().New("test", EmptyDelegate, nil)
 	if err != nil {
 		t.Fatalf("Error in bringing up the server: %v", err)
 	}
@@ -347,7 +347,7 @@ func TestCustomHandlerChain(t *testing.T) {
 		called = true
 	})
 
-	s, err := config.SkipComplete().New("test", EmptyDelegate)
+	s, err := config.SkipComplete().New("test", EmptyDelegate, nil)
 	if err != nil {
 		t.Fatalf("Error in bringing up the server: %v", err)
 	}
@@ -402,7 +402,7 @@ func TestNotRestRoutesHaveAuth(t *testing.T) {
 	kubeVersion := fakeVersion()
 	config.Version = &kubeVersion
 
-	s, err := config.SkipComplete().New("test", EmptyDelegate)
+	s, err := config.SkipComplete().New("test", EmptyDelegate, nil)
 	if err != nil {
 		t.Fatalf("Error in bringing up the server: %v", err)
 	}
