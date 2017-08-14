@@ -465,15 +465,8 @@ func NewDefaultAPIGroupInfo(group string, registry *registered.APIRegistrationMa
 }
 
 func destroyStorage(apiGroupInfo *APIGroupInfo) {
-	destroyed := map[rest.Storage]bool{}
-
-	for _, m := range apiGroupInfo.VersionedResourcesStorageMap {
-		for k, store := range m {
-			if destroyed[store] {
-				continue
-			}
-			// destroyed[store] = true
-			fmt.Println("DESTROY", k, store)
+	for _, stores := range apiGroupInfo.VersionedResourcesStorageMap {
+		for _, store := range stores {
 			store.DESTROY()
 		}
 	}
