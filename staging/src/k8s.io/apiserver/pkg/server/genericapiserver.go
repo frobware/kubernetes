@@ -154,8 +154,9 @@ type GenericAPIServer struct {
 	// if the client requests it via Accept-Encoding
 	enableAPIResponseCompression bool
 
-	// Destroy ...
-	destroy_ch <-chan struct{}
+	// stopCh is to be used to clean up any resources that the
+	// server creates or maintains.
+	stopCh <-chan struct{}
 }
 
 // DelegationTarget is an interface which allows for composition of API servers with top level handling that works
@@ -355,10 +356,12 @@ func (s *GenericAPIServer) InstallLegacyAPIGroup(apiPrefix string, apiGroupInfo 
 	// Add a handler at /<apiPrefix> to enumerate the supported api versions.
 	s.Handler.GoRestfulContainer.Add(discovery.NewLegacyRootAPIHandler(s.discoveryAddresses, s.Serializer, apiPrefix, apiVersions, s.requestContextMapper).WebService())
 
-	go func() {
-		<-s.destroy_ch
-		destroyStorage(apiGroupInfo)
-	}()
+	if s.stopCh != nil {
+		go func() {
+			<-s.stopCh
+			destroyStorage(apiGroupInfo)
+		}()
+	}
 
 	return nil
 }
@@ -405,10 +408,12 @@ func (s *GenericAPIServer) InstallAPIGroup(apiGroupInfo *APIGroupInfo) error {
 	s.DiscoveryGroupManager.AddGroup(apiGroup)
 	s.Handler.GoRestfulContainer.Add(discovery.NewAPIGroupHandler(s.Serializer, apiGroup, s.requestContextMapper).WebService())
 
-	go func() {
-		<-s.destroy_ch
-		destroyStorage(apiGroupInfo)
-	}()
+	if s.stopCh != nil {
+		go func() {
+			<-s.stopCh
+			destroyStorage(apiGroupInfo)
+		}()
+	}
 
 	return nil
 }
