@@ -356,12 +356,10 @@ func (s *GenericAPIServer) InstallLegacyAPIGroup(apiPrefix string, apiGroupInfo 
 	// Add a handler at /<apiPrefix> to enumerate the supported api versions.
 	s.Handler.GoRestfulContainer.Add(discovery.NewLegacyRootAPIHandler(s.discoveryAddresses, s.Serializer, apiPrefix, apiVersions, s.requestContextMapper).WebService())
 
-	if s.stopCh != nil {
-		go func() {
-			<-s.stopCh
-			destroyStorage(apiGroupInfo)
-		}()
-	}
+	go func() {
+		<-s.stopCh
+		destroyStorage(apiGroupInfo)
+	}()
 
 	return nil
 }
@@ -408,12 +406,10 @@ func (s *GenericAPIServer) InstallAPIGroup(apiGroupInfo *APIGroupInfo) error {
 	s.DiscoveryGroupManager.AddGroup(apiGroup)
 	s.Handler.GoRestfulContainer.Add(discovery.NewAPIGroupHandler(s.Serializer, apiGroup, s.requestContextMapper).WebService())
 
-	if s.stopCh != nil {
-		go func() {
-			<-s.stopCh
-			destroyStorage(apiGroupInfo)
-		}()
-	}
+	go func() {
+		<-s.stopCh
+		destroyStorage(apiGroupInfo)
+	}()
 
 	return nil
 }
