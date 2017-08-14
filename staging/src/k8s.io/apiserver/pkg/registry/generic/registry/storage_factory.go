@@ -17,7 +17,6 @@ limitations under the License.
 package registry
 
 import (
-	"fmt"
 	"sync"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -70,9 +69,7 @@ func StorageWithCacher(defaultCapacity int) generic.StorageDecorator {
 		once := sync.Once{}
 
 		destroyFunc := func() {
-			fmt.Printf("DESTROY_FUNC cacher=%p storage=%p, destroy_func=%p\n", cacher, s, d)
 			once.Do(func() {
-				fmt.Printf("ABOUT_TO CACHER_STOP cacher=%p\n", cacher)
 				cacher.Stop()
 				d()
 			})

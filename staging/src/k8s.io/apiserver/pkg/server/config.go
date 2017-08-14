@@ -419,11 +419,8 @@ func (c completedConfig) New(name string, delegationTarget DelegationTarget, sto
 		DiscoveryGroupManager: discovery.NewRootAPIsHandler(c.DiscoveryAddresses, c.Serializer, c.RequestContextMapper),
 
 		enableAPIResponseCompression: c.EnableAPIResponseCompression,
-
 		stopCh: stopCh,
 	}
-
-	fmt.Printf("RETURNING APISERVER %p\n", s)
 
 	for k, v := range delegationTarget.PostStartHooks() {
 		s.postStartHooks[k] = v
