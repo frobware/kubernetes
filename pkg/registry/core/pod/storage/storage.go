@@ -135,8 +135,8 @@ func (r *BindingREST) New() runtime.Object {
 	return &api.Binding{}
 }
 
-func (r *BindingREST) DESTROY() {
-	r.store.DESTROY()
+func (r *BindingREST) Destroy() {
+	r.store.Destroy()
 }
 
 var _ = rest.Creater(&BindingREST{})
@@ -213,8 +213,8 @@ func (r *StatusREST) New() runtime.Object {
 	return &api.Pod{}
 }
 
-func (r *StatusREST) DESTROY() {
-	r.store.DESTROY()
+func (r *StatusREST) Destroy() {
+	r.store.Destroy()
 }
 
 // Get retrieves the object from the storage. It is required to support Patch.

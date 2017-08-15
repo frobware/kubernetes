@@ -81,8 +81,8 @@ func (r *StatusREST) New() runtime.Object {
 	return &certificates.CertificateSigningRequest{}
 }
 
-func (r *StatusREST) DESTROY() {
-	r.store.DESTROY()
+func (r *StatusREST) Destroy() {
+	r.store.Destroy()
 }
 
 // Update alters the status subset of an object.
@@ -99,8 +99,8 @@ func (r *ApprovalREST) New() runtime.Object {
 	return &certificates.CertificateSigningRequest{}
 }
 
-func (r *ApprovalREST) DESTROY() {
-	r.store.DESTROY()
+func (r *ApprovalREST) Destroy() {
+	r.store.Destroy()
 }
 
 // Update alters the approval subset of an object.

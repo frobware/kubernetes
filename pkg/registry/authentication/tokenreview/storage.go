@@ -39,7 +39,7 @@ func (r *REST) New() runtime.Object {
 	return &authentication.TokenReview{}
 }
 
-func (r *REST) DESTROY() {}
+func (r *REST) Destroy() {}
 
 func (r *REST) Create(ctx genericapirequest.Context, obj runtime.Object, includeUninitialized bool) (runtime.Object, error) {
 	tokenReview, ok := obj.(*authentication.TokenReview)

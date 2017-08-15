@@ -219,7 +219,7 @@ func (*REST) New() runtime.Object {
 	return &api.Service{}
 }
 
-func (r *REST) DESTROY() {}
+func (r *REST) Destroy() {}
 
 func (*REST) NewList() runtime.Object {
 	return &api.ServiceList{}

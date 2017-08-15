@@ -61,7 +61,7 @@ func (r *ScaleREST) New() runtime.Object {
 	return &extensions.Scale{}
 }
 
-func (r *ScaleREST) DESTROY() {}
+func (r *ScaleREST) Destroy() {}
 
 func (r *ScaleREST) Get(ctx genericapirequest.Context, name string, options *metav1.GetOptions) (runtime.Object, error) {
 	rc, err := (*r.registry).GetController(ctx, name, options)
@@ -130,4 +130,4 @@ func (r *RcREST) New() runtime.Object {
 	return &extensions.ReplicationControllerDummy{}
 }
 
-func (r *RcREST) DESTROY() {}
+func (r *RcREST) Destroy() {}

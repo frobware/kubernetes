@@ -51,8 +51,8 @@ func (r *ProxyREST) New() runtime.Object {
 	return &api.Pod{}
 }
 
-func (r *ProxyREST) DESTROY() {
-	r.Store.DESTROY()
+func (r *ProxyREST) Destroy() {
+	r.Store.Destroy()
 }
 
 // ConnectMethods returns the list of HTTP methods that can be proxied
@@ -97,8 +97,8 @@ func (r *AttachREST) New() runtime.Object {
 	return &api.Pod{}
 }
 
-func (r *AttachREST) DESTROY() {
-	r.Store.DESTROY()
+func (r *AttachREST) Destroy() {
+	r.Store.Destroy()
 }
 
 // Connect returns a handler for the pod exec proxy
@@ -138,8 +138,8 @@ func (r *ExecREST) New() runtime.Object {
 	return &api.Pod{}
 }
 
-func (r *ExecREST) DESTROY() {
-	r.Store.DESTROY()
+func (r *ExecREST) Destroy() {
+	r.Store.Destroy()
 }
 
 // Connect returns a handler for the pod exec proxy
@@ -179,8 +179,8 @@ func (r *PortForwardREST) New() runtime.Object {
 	return &api.Pod{}
 }
 
-func (r *PortForwardREST) DESTROY() {
-	r.Store.DESTROY()
+func (r *PortForwardREST) Destroy() {
+	r.Store.Destroy()
 }
 
 // NewConnectOptions returns the versioned object that represents the

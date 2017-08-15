@@ -108,8 +108,8 @@ func (r *StatusREST) New() runtime.Object {
 	return &api.ReplicationController{}
 }
 
-func (r *StatusREST) DESTROY() {
-	r.store.DESTROY()
+func (r *StatusREST) Destroy() {
+	r.store.Destroy()
 }
 
 // Get retrieves the object from the storage. It is required to support Patch.
@@ -134,7 +134,7 @@ func (r *ScaleREST) New() runtime.Object {
 	return &autoscaling.Scale{}
 }
 
-func (r *ScaleREST) DESTROY() {
+func (r *ScaleREST) Destroy() {
 }
 
 func (r *ScaleREST) Get(ctx genericapirequest.Context, name string, options *metav1.GetOptions) (runtime.Object, error) {

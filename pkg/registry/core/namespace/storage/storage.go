@@ -84,8 +84,8 @@ func (r *REST) New() runtime.Object {
 	return r.store.New()
 }
 
-func (r *REST) DESTROY() {
-	r.store.DESTROY()
+func (r *REST) Destroy() {
+	r.store.Destroy()
 }
 
 func (r *REST) NewList() runtime.Object {
@@ -220,8 +220,8 @@ func (r *StatusREST) New() runtime.Object {
 	return r.store.New()
 }
 
-func (r *StatusREST) DESTROY() {
-	r.store.DESTROY()
+func (r *StatusREST) Destroy() {
+	r.store.Destroy()
 }
 
 // Get retrieves the object from the storage. It is required to support Patch.
@@ -238,8 +238,8 @@ func (r *FinalizeREST) New() runtime.Object {
 	return r.store.New()
 }
 
-func (r *FinalizeREST) DESTROY() {
-	r.store.DESTROY()
+func (r *FinalizeREST) Destroy() {
+	r.store.Destroy()
 }
 
 // Update alters the status finalizers subset of an object.

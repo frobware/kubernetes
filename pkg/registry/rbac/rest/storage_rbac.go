@@ -291,4 +291,4 @@ func (p RESTStorageProvider) GroupName() string {
 	return rbac.GroupName
 }
 
-func (p RESTStorageProvider) DESTROY() {}
+func (p RESTStorageProvider) Destroy() {}

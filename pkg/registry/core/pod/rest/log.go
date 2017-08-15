@@ -46,8 +46,8 @@ func (r *LogREST) New() runtime.Object {
 	return &api.Pod{}
 }
 
-func (r *LogREST) DESTROY() {
-	r.Store.DESTROY()
+func (r *LogREST) Destroy() {
+	r.Store.Destroy()
 }
 
 // LogREST implements StorageMetadata

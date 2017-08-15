@@ -476,7 +476,7 @@ func (p *testGetterStorage) New() runtime.Object {
 	}
 }
 
-func (p *testGetterStorage) DESTROY() {}
+func (p *testGetterStorage) Destroy() {}
 
 func (p *testGetterStorage) Get(ctx genericapirequest.Context, name string, options *metav1.GetOptions) (runtime.Object, error) {
 	return nil, nil
@@ -495,7 +495,7 @@ func (p *testNoVerbsStorage) New() runtime.Object {
 	}
 }
 
-func (p *testNoVerbsStorage) DESTROY() {}
+func (p *testNoVerbsStorage) Destroy() {}
 
 func fakeVersion() version.Info {
 	return version.Info{

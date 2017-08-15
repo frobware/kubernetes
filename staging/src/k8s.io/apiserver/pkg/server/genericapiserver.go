@@ -468,7 +468,7 @@ func NewDefaultAPIGroupInfo(group string, registry *registered.APIRegistrationMa
 func destroyStorage(apiGroupInfo *APIGroupInfo) {
 	for _, stores := range apiGroupInfo.VersionedResourcesStorageMap {
 		for _, store := range stores {
-			store.DESTROY()
+			store.Destroy()
 		}
 	}
 }

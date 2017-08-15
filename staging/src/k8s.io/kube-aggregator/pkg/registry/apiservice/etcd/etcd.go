@@ -72,8 +72,8 @@ func (r *StatusREST) New() runtime.Object {
 	return &apiregistration.APIService{}
 }
 
-func (r *StatusREST) DESTROY() {
-	r.store.DESTROY()
+func (r *StatusREST) Destroy() {
+	r.store.Destroy()
 }
 
 // Update alters the status subset of an object.
