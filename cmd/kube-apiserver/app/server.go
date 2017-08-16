@@ -113,16 +113,23 @@ func Run(runOptions *options.ServerRunOptions, stopCh <-chan struct{}) error {
 	// To help debugging, immediately log version
 	glog.Infof("Version: %+v", version.Get())
 
-	server, err := CreateServerChain(runOptions, stopCh)
+	servers, err := CreateServerChain(runOptions, stopCh)
 	if err != nil {
 		return err
 	}
 
-	return server.PrepareRun().Run(stopCh)
+	go func() {
+		<-stopCh
+		for i := range servers {
+			servers[i].DestroyStorage()
+		}
+	}()
+
+	return servers[0].PrepareRun().Run(stopCh)
 }
 
 // CreateServerChain creates the apiservers connected via delegation.
-func CreateServerChain(runOptions *options.ServerRunOptions, stopCh <-chan struct{}) (*genericapiserver.GenericAPIServer, error) {
+func CreateServerChain(runOptions *options.ServerRunOptions, stopCh <-chan struct{}) ([]*genericapiserver.GenericAPIServer, error) {
 	nodeTunneler, proxyTransport, err := CreateNodeDialer(runOptions)
 	if err != nil {
 		return nil, err
@@ -158,7 +165,9 @@ func CreateServerChain(runOptions *options.ServerRunOptions, stopCh <-chan struc
 			}
 		}
 
-		return kubeAPIServer.GenericAPIServer, nil
+		return []*genericapiserver.GenericAPIServer{
+			kubeAPIServer.GenericAPIServer,
+		}, nil
 	}
 
 	// otherwise go down the normal path of standing the aggregator up in front of the API server
@@ -185,7 +194,11 @@ func CreateServerChain(runOptions *options.ServerRunOptions, stopCh <-chan struc
 		}
 	}
 
-	return aggregatorServer.GenericAPIServer, nil
+	return []*genericapiserver.GenericAPIServer{
+		aggregatorServer.GenericAPIServer,
+		kubeAPIServer.GenericAPIServer,
+		apiExtensionsServer.GenericAPIServer,
+	}, nil
 }
 
 // CreateKubeAPIServer creates and wires a workable kube-apiserver

@@ -19,6 +19,7 @@ package testing
 import (
 	"encoding/json"
 	"fmt"
+	"runtime"
 	"testing"
 	"time"
 
@@ -383,4 +384,13 @@ func crdExistsInDiscovery(client apiextensionsclientset.Interface, crd *apiexten
 		}
 	}
 	return false, nil
+}
+
+func TestTeardown(t *testing.T) {
+	fmt.Println("AAA Starting test with ", runtime.NumGoroutine())
+	_, tearDown := StartTestServerOrDie(t)
+	fmt.Println("AAA TEST FINISHED", runtime.NumGoroutine())
+	// time.Sleep(120 * time.Minute)
+	tearDown()
+	fmt.Println("AAA teardown() FINISHED", runtime.NumGoroutine())
 }

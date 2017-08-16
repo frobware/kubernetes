@@ -53,6 +53,7 @@ import (
 	apirequest "k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/features"
 	genericregistry "k8s.io/apiserver/pkg/registry/generic"
+	"k8s.io/apiserver/pkg/registry/rest"
 	genericfilters "k8s.io/apiserver/pkg/server/filters"
 	"k8s.io/apiserver/pkg/server/healthz"
 	"k8s.io/apiserver/pkg/server/routes"
@@ -419,7 +420,8 @@ func (c completedConfig) New(name string, delegationTarget DelegationTarget, sto
 		DiscoveryGroupManager: discovery.NewRootAPIsHandler(c.DiscoveryAddresses, c.Serializer, c.RequestContextMapper),
 
 		enableAPIResponseCompression: c.EnableAPIResponseCompression,
-		stopCh: stopCh,
+		stopCh:  stopCh,
+		storage: map[rest.Storage]bool{},
 	}
 
 	for k, v := range delegationTarget.PostStartHooks() {

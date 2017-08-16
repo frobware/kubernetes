@@ -149,6 +149,8 @@ type GenericAPIServer struct {
 	// stopCh is to be used to clean up any resources that the
 	// server creates or maintains.
 	stopCh <-chan struct{}
+
+	storage map[rest.Storage]bool
 }
 
 // DelegationTarget is an interface which allows for composition of API servers with top level handling that works
@@ -303,15 +305,11 @@ func (s *GenericAPIServer) EffectiveSecurePort() int {
 
 // installAPIResources is a private method for installing the REST storage backing each api groupversionresource
 func (s *GenericAPIServer) installAPIResources(apiPrefix string, apiGroupInfo *APIGroupInfo) error {
-	go func() {
-		<-s.stopCh
-
-		for _, m := range apiGroupInfo.VersionedResourcesStorageMap {
-			for _, storage := range m {
-				storage.Destroy()
-			}
+	for _, m := range apiGroupInfo.VersionedResourcesStorageMap {
+		for _, storage := range m {
+			s.storage[storage] = true
 		}
-	}()
+	}
 
 	for _, groupVersion := range apiGroupInfo.GroupMeta.GroupVersions {
 		if len(apiGroupInfo.VersionedResourcesStorageMap[groupVersion.Version]) == 0 {
@@ -445,5 +443,12 @@ func NewDefaultAPIGroupInfo(group string, registry *registered.APIRegistrationMa
 		Scheme:                 scheme,
 		ParameterCodec:         parameterCodec,
 		NegotiatedSerializer:   codecs,
+	}
+}
+
+func (s *GenericAPIServer) DestroyStorage() {
+	for store := range s.storage {
+		fmt.Printf("DESTROY %+v\n", store)
+		store.Destroy()
 	}
 }

@@ -83,19 +83,27 @@ func StartTestServer(t *testing.T) (result *restclient.Config, tearDownForCaller
 
 	t.Logf("Starting kube-apiserver...")
 	runErrCh := make(chan error, 1)
-	server, err := app.CreateServerChain(s, stopCh)
+	servers, err := app.CreateServerChain(s, stopCh)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Failed to create server chain: %v", err)
 	}
+
+	go func() {
+		<-stopCh
+		for i := range servers {
+			servers[i].DestroyStorage()
+		}
+	}()
+
 	go func(stopCh <-chan struct{}) {
-		if err := server.PrepareRun().Run(stopCh); err != nil {
+		if err := servers[0].PrepareRun().Run(stopCh); err != nil {
 			t.Logf("kube-apiserver exited uncleanly: %v", err)
 			runErrCh <- err
 		}
 	}(stopCh)
 
 	t.Logf("Waiting for /healthz to be ok...")
-	client, err := kubernetes.NewForConfig(server.LoopbackClientConfig)
+	client, err := kubernetes.NewForConfig(servers[0].LoopbackClientConfig)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Failed to create a client: %v", err)
 	}
@@ -119,7 +127,7 @@ func StartTestServer(t *testing.T) (result *restclient.Config, tearDownForCaller
 	}
 
 	// from here the caller must call tearDown
-	return server.LoopbackClientConfig, tearDown, nil
+	return servers[0].LoopbackClientConfig, tearDown, nil
 }
 
 // StartTestServerOrDie calls StartTestServer with up to 5 retries on bind error and dies with
