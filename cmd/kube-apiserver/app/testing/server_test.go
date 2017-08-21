@@ -19,6 +19,7 @@ package testing
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -33,15 +34,16 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
+	genericapiserver "k8s.io/apiserver/pkg/server"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 )
 
 func TestRun(t *testing.T) {
-	config, tearDown := StartTestServerOrDie(t)
+	server, tearDown := StartTestServerOrDie(t)
 	defer tearDown()
 
-	client, err := kubernetes.NewForConfig(config)
+	client, err := kubernetes.NewForConfig(server.LoopbackClientConfig)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -84,15 +86,15 @@ func TestRun(t *testing.T) {
 }
 
 func TestCRDShadowGroup(t *testing.T) {
-	config, tearDown := StartTestServerOrDie(t)
+	server, tearDown := StartTestServerOrDie(t)
 	defer tearDown()
 
-	kubeclient, err := kubernetes.NewForConfig(config)
+	kubeclient, err := kubernetes.NewForConfig(server.LoopbackClientConfig)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
 
-	apiextensionsclient, err := apiextensionsclientset.NewForConfig(config)
+	apiextensionsclient, err := apiextensionsclientset.NewForConfig(server.LoopbackClientConfig)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -150,15 +152,15 @@ func TestCRDShadowGroup(t *testing.T) {
 }
 
 func TestCRD(t *testing.T) {
-	config, tearDown := StartTestServerOrDie(t)
+	server, tearDown := StartTestServerOrDie(t)
 	defer tearDown()
 
-	kubeclient, err := kubernetes.NewForConfig(config)
+	kubeclient, err := kubernetes.NewForConfig(server.LoopbackClientConfig)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
 
-	apiextensionsclient, err := apiextensionsclientset.NewForConfig(config)
+	apiextensionsclient, err := apiextensionsclientset.NewForConfig(server.LoopbackClientConfig)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -191,7 +193,7 @@ func TestCRD(t *testing.T) {
 	}
 
 	t.Logf("Trying to access foos.cr.bar.com with dynamic client")
-	barComConfig := *config
+	barComConfig := *server.LoopbackClientConfig
 	barComConfig.GroupVersion = &schema.GroupVersion{Group: "cr.bar.com", Version: "v1"}
 	barComConfig.APIPath = "/apis"
 	barComClient, err := dynamic.NewClient(&barComConfig)
@@ -383,4 +385,101 @@ func crdExistsInDiscovery(client apiextensionsclientset.Interface, crd *apiexten
 		}
 	}
 	return false, nil
+}
+
+const apiextensionPathPrefix = "/apis/apiextensions.k8s.io"
+
+func havePathPrefix(paths []string, prefix string) bool {
+	for i := range paths {
+		if strings.HasPrefix(paths[i], prefix) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func TestOpenAPIPresence1(t *testing.T) {
+	server, tearDown := StartTestServerOrDie(t)
+	defer tearDown()
+
+	var testCases = []struct {
+		description string
+		expected    bool
+		pathPrefix  string
+	}{{
+		"should match in first delegate",
+		true,
+		apiextensionPathPrefix,
+	}, {
+		"should match in second delegate",
+		true,
+		apiextensionPathPrefix,
+	}, {
+		"should not match at end of the chain",
+		false,
+		apiextensionPathPrefix,
+	}}
+
+	delegates := []genericapiserver.DelegationTarget{}
+
+	for d := server.NextDelegate(); d != nil; d = d.NextDelegate() {
+		delegates = append(delegates, d)
+	}
+
+	if len(delegates) != len(testCases) {
+		t.Fatalf("expected %v delegates, got %d", len(testCases), len(delegates))
+	}
+
+	for i, tc := range testCases {
+		t.Logf("test %d: %s", i, tc.description)
+		actual := havePathPrefix(delegates[i].ListedPaths(), tc.pathPrefix)
+		if tc.expected != actual {
+			t.Fatalf("%q: expected %v, got %v", tc.description, tc.expected, actual)
+		}
+	}
+}
+
+func TestOpenAPIPresence2(t *testing.T) {
+	server, tearDown := StartTestServerOrDie(t)
+	defer tearDown()
+
+	kubeclient, err := kubernetes.NewForConfig(server.LoopbackClientConfig)
+
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	result := kubeclient.RESTClient().Get().AbsPath("/swagger.json").Do()
+	status := 0
+	result.StatusCode(&status)
+
+	if status != 200 {
+		t.Fatalf("GET /swagger.json failed: expected status=%d, got=%d", 200, status)
+	}
+
+	raw, err := result.Raw()
+
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	type openAPISchema struct {
+		Paths map[string]interface{} `json:"paths"`
+	}
+
+	var x openAPISchema
+	err = json.Unmarshal(raw, &x)
+
+	if err != nil {
+		t.Fatalf("Failed to unmarshal: %v", err)
+	}
+
+	for path := range x.Paths {
+		if strings.HasPrefix(path, apiextensionPathPrefix) {
+			return
+		}
+	}
+
+	t.Fatalf("missing path %q", apiextensionPathPrefix)
 }

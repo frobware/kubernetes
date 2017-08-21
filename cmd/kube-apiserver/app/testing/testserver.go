@@ -26,9 +26,9 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/wait"
+	genericapiserver "k8s.io/apiserver/pkg/server"
 	etcdtesting "k8s.io/apiserver/pkg/storage/etcd/testing"
 	"k8s.io/client-go/kubernetes"
-	restclient "k8s.io/client-go/rest"
 	"k8s.io/kubernetes/cmd/kube-apiserver/app"
 	"k8s.io/kubernetes/cmd/kube-apiserver/app/options"
 	"k8s.io/kubernetes/pkg/api"
@@ -43,7 +43,7 @@ type TearDownFunc func()
 // Note: we return a tear-down func instead of a stop channel because the later will leak temporariy
 // 		 files that becaues Golang testing's call to os.Exit will not give a stop channel go routine
 // 		 enough time to remove temporariy files.
-func StartTestServer(t *testing.T) (result *restclient.Config, tearDownForCaller TearDownFunc, err error) {
+func StartTestServer(t *testing.T) (server *genericapiserver.GenericAPIServer, tearDownForCaller TearDownFunc, err error) {
 	var tmpDir string
 	var etcdServer *etcdtesting.EtcdTestServer
 	stopCh := make(chan struct{})
@@ -83,7 +83,7 @@ func StartTestServer(t *testing.T) (result *restclient.Config, tearDownForCaller
 
 	t.Logf("Starting kube-apiserver...")
 	runErrCh := make(chan error, 1)
-	server, err := app.CreateServerChain(s, stopCh)
+	server, err = app.CreateServerChain(s, stopCh)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Failed to create server chain: %v", err)
 	}
@@ -119,12 +119,12 @@ func StartTestServer(t *testing.T) (result *restclient.Config, tearDownForCaller
 	}
 
 	// from here the caller must call tearDown
-	return server.LoopbackClientConfig, tearDown, nil
+	return server, tearDown, nil
 }
 
 // StartTestServerOrDie calls StartTestServer with up to 5 retries on bind error and dies with
 // t.Fatal if it does not succeed.
-func StartTestServerOrDie(t *testing.T) (*restclient.Config, TearDownFunc) {
+func StartTestServerOrDie(t *testing.T) (*genericapiserver.GenericAPIServer, TearDownFunc) {
 	// retry test because the bind might fail due to a race with another process
 	// binding to the port. We cannot listen to :0 (then the kernel would give us
 	// a port which is free for sure), so we need this workaround.
@@ -132,12 +132,12 @@ func StartTestServerOrDie(t *testing.T) (*restclient.Config, TearDownFunc) {
 	var err error
 
 	for retry := 0; retry < 5 && !t.Failed(); retry++ {
-		var config *restclient.Config
+		var server *genericapiserver.GenericAPIServer
 		var td TearDownFunc
 
-		config, td, err = StartTestServer(t)
+		server, td, err = StartTestServer(t)
 		if err == nil {
-			return config, td
+			return server, td
 		}
 		if err != nil && !strings.Contains(err.Error(), "bind") {
 			break
