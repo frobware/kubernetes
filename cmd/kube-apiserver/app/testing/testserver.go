@@ -71,7 +71,7 @@ func StartTestServer(t *testing.T) (result *restclient.Config, tearDownForCaller
 	}
 
 	s := options.NewServerRunOptions()
-	s.InsecureServing.BindPort = 0
+	s.InsecureServing.BindPort = 8080
 	s.SecureServing.BindPort = freePort()
 	s.SecureServing.ServerCert.CertDirectory = tmpDir
 	s.ServiceClusterIPRange.IP = net.IPv4(10, 0, 0, 0)

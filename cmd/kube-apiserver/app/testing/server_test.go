@@ -19,6 +19,7 @@ package testing
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"testing"
 	"time"
 
@@ -35,6 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/util/openapi"
 )
 
 func TestRun(t *testing.T) {
@@ -383,4 +385,36 @@ func crdExistsInDiscovery(client apiextensionsclientset.Interface, crd *apiexten
 		}
 	}
 	return false, nil
+}
+
+func TestTeardown(t *testing.T) {
+	config, tearDown := StartTestServerOrDie(t)
+	defer tearDown()
+
+	kubeclient, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	// r := kubeclient.DiscoveryClient.RESTClient()
+	// r.Get()
+	// fmt.Println(r)
+
+	if true {
+		tmpDir, err2 := ioutil.TempDir("", "openapi_cache_test")
+
+		instance := openapi.NewCachingOpenAPIClient(kubeclient, "v1.6", tmpDir)
+
+		fmt.Println(instance.OpenAPIData())
+		fmt.Println(config, tearDown, kubeclient, err, err2)
+		fmt.Println("INSTANCE", instance)
+
+		resources, err := instance.OpenAPIData()
+		fmt.Println("DATA", resources, err)
+
+		fmt.Println(config.Host)
+		fmt.Println(config.APIPath)
+
+		<-make(chan struct{})
+	}
 }
