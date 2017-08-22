@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"runtime/debug"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -222,8 +223,18 @@ func MergeSpecs(dest, source *spec.Swagger) error {
 }
 
 func mergeSpecs(dest, source *spec.Swagger, renameConflicts bool) error {
+	debug.PrintStack()
 	// Check to see if there is any conflicts
 	conflicts := false
+
+	for k := range dest.Definitions {
+		fmt.Println("DDD", k)
+	}
+
+	for k := range source.Definitions {
+		fmt.Println("DDD", k)
+	}
+
 	for k := range source.Definitions {
 		if _, found := dest.Definitions[k]; found {
 			if !renameConflicts {
@@ -260,6 +271,7 @@ func mergeSpecs(dest, source *spec.Swagger, renameConflicts bool) error {
 				if found && reflect.DeepEqual(v, v2) {
 					continue
 				}
+				panic("X")
 				i := 2
 				newName := fmt.Sprintf("%s_v%d", k, i)
 				_, foundInSource := source.Definitions[newName]
@@ -272,6 +284,7 @@ func mergeSpecs(dest, source *spec.Swagger, renameConflicts bool) error {
 				usedNames[newName] = true
 			}
 		}
+		fmt.Println("RENAMES", renames)
 		for _, r := range renames {
 			renameDefinition(source, r.from, r.to)
 		}
@@ -280,7 +293,10 @@ func mergeSpecs(dest, source *spec.Swagger, renameConflicts bool) error {
 		if _, found := dest.Definitions[k]; found {
 			dest.Definitions[k] = v
 		} else {
-			return fmt.Errorf("Model name conflict in merging OpenAPI spec: %s", k)
+			if !conflicts {
+				panic("thought so")
+			}
+			// return fmt.Errorf("MODEL NAME CONFLICT IN MERGING OPENAPI SPEC: %s, conflicts=%v", k, conflicts)
 		}
 	}
 	return nil

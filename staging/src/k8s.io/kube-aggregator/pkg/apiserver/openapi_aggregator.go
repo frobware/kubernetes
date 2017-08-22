@@ -27,6 +27,8 @@ import (
 	"github.com/emicklei/go-restful"
 	"github.com/go-openapi/spec"
 
+	"strings"
+
 	"k8s.io/apiserver/pkg/authentication/user"
 	"k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/server"
@@ -35,7 +37,6 @@ import (
 	"k8s.io/kube-openapi/pkg/builder"
 	"k8s.io/kube-openapi/pkg/common"
 	"k8s.io/kube-openapi/pkg/handler"
-	"strings"
 )
 
 const (
@@ -80,6 +81,7 @@ func buildAndRegisterOpenAPIAggregator(delegationTarget server.DelegationTarget,
 
 	i := 0
 	for delegate := delegationTarget; delegate != nil; delegate = delegate.NextDelegate() {
+		fmt.Printf("ZZZ %d=%+v\n", i, delegate)
 		handler := delegate.UnprotectedHandler()
 		if handler == nil {
 			continue
@@ -89,6 +91,7 @@ func buildAndRegisterOpenAPIAggregator(delegationTarget server.DelegationTarget,
 			return nil, err
 		}
 		if delegateSpec == nil {
+			panic(fmt.Sprintf("ZZZ panic %d", i))
 			continue
 		}
 		// First spec is the base for all other specs. Keep all of its path
@@ -185,6 +188,8 @@ func sortByPriority(specs []openAPISpecInfo) {
 	sort.Sort(b)
 }
 
+func FOO() {}
+
 // buildOpenAPISpec aggregates all OpenAPI specs.  It is not thread-safe.
 func (s *openAPIAggregator) buildOpenAPISpec() (specToReturn *spec.Swagger, err error) {
 	firstDelegateName := fmt.Sprintf(localDelegateChainNamePattern, 0)
@@ -205,6 +210,7 @@ func (s *openAPIAggregator) buildOpenAPISpec() (specToReturn *spec.Swagger, err 
 	}
 	sortByPriority(specs)
 	for _, specInfo := range specs {
+		FOO()
 		if err := aggregator.MergeSpecs(specToReturn, specInfo.spec); err != nil {
 			return nil, err
 		}
