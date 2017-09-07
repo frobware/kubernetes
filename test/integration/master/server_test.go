@@ -41,10 +41,11 @@ import (
 	"k8s.io/client-go/kubernetes"
 	apiregistrationv1beta1 "k8s.io/kube-aggregator/pkg/apis/apiregistration"
 	kubeapiserver "k8s.io/kubernetes/cmd/kube-apiserver/app/testing"
+	"k8s.io/kubernetes/test/integration/framework"
 )
 
 func TestRun(t *testing.T) {
-	config, _, tearDown := kubeapiserver.StartTestServerOrDie(t, nil, kubeapiserver.SharedInProcessEtcd(t))
+	config, _, tearDown := kubeapiserver.StartTestServerOrDie(t, nil, framework.SharedEtcd())
 	defer tearDown()
 
 	client, err := kubernetes.NewForConfig(config)
@@ -90,7 +91,7 @@ func TestRun(t *testing.T) {
 }
 
 func TestCRDShadowGroup(t *testing.T) {
-	config, _, tearDown := kubeapiserver.StartTestServerOrDie(t, nil, kubeapiserver.SharedInProcessEtcd(t))
+	config, _, tearDown := kubeapiserver.StartTestServerOrDie(t, nil, framework.SharedEtcd())
 	defer tearDown()
 
 	kubeclient, err := kubernetes.NewForConfig(config)
@@ -158,7 +159,7 @@ func TestCRDShadowGroup(t *testing.T) {
 func TestCRD(t *testing.T) {
 	defer utilfeaturetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.Initializers, true)()
 
-	config, _, tearDown := kubeapiserver.StartTestServerOrDie(t, []string{"--admission-control", "Initializers"}, kubeapiserver.SharedInProcessEtcd(t))
+	config, _, tearDown := kubeapiserver.StartTestServerOrDie(t, []string{"--admission-control", "Initializers"}, framework.SharedEtcd())
 	defer tearDown()
 
 	kubeclient, err := kubernetes.NewForConfig(config)
@@ -398,7 +399,7 @@ func crdExistsInDiscovery(client apiextensionsclientset.Interface, crd *apiexten
 // apiextensions-server and the kube-aggregator server, both part of
 // the delegation chain in kube-apiserver.
 func TestOpenAPIDelegationChainPlumbing(t *testing.T) {
-	config, _, tearDown := kubeapiserver.StartTestServerOrDie(t, nil, kubeapiserver.SharedInProcessEtcd(t))
+	config, _, tearDown := kubeapiserver.StartTestServerOrDie(t, nil, framework.SharedEtcd())
 	defer tearDown()
 
 	kubeclient, err := kubernetes.NewForConfig(config)
