@@ -23,7 +23,6 @@ import (
 	goruntime "runtime"
 	"strconv"
 	"sync"
-	"testing"
 	"time"
 
 	"github.com/go-openapi/spec"
