@@ -56,6 +56,8 @@ var (
 	memoryUsed        = 64
 	memoryLimit int64 = 200
 	tolerance         = 0.25
+
+	StackdriverAdapter = "https://raw.githubusercontent.com/GoogleCloudPlatform/k8s-stackdriver/master/custom-metrics-stackdriver-adapter/adapter-beta.yaml"
 )
 
 var _ = instrumentation.SIGDescribe("Stackdriver Monitoring", func() {

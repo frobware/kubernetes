@@ -98,11 +98,11 @@ func testAdapter(f *framework.Framework, kubeClient clientset.Interface, customM
 	}
 	defer CleanupDescriptors(gcmService, projectId)
 
-	err = CreateAdapter()
+	err = CreateAdapter(StackdriverAdapter)
 	if err != nil {
 		framework.Failf("Failed to set up: %s", err)
 	}
-	defer CleanupAdapter()
+	defer CleanupAdapter(StackdriverAdapter)
 
 	_, err = kubeClient.RbacV1().ClusterRoleBindings().Create(HPAPermissions)
 	defer kubeClient.RbacV1().ClusterRoleBindings().Delete("custom-metrics-reader", &metav1.DeleteOptions{})
