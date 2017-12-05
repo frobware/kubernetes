@@ -25,6 +25,7 @@ go_library(
         "//pkg/master/reconcilers:go_default_library",
         "//plugin/pkg/admission/admit:go_default_library",
         "//plugin/pkg/admission/alwayspullimages:go_default_library",
+        "//plugin/pkg/admission/alwaysqualifyimages:go_default_library",
         "//plugin/pkg/admission/antiaffinity:go_default_library",
         "//plugin/pkg/admission/defaulttolerationseconds:go_default_library",
         "//plugin/pkg/admission/deny:go_default_library",

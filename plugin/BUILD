@@ -14,6 +14,7 @@ filegroup(
         "//plugin/cmd/kube-scheduler:all-srcs",
         "//plugin/pkg/admission/admit:all-srcs",
         "//plugin/pkg/admission/alwayspullimages:all-srcs",
+        "//plugin/pkg/admission/alwaysqualifyimages:all-srcs",
         "//plugin/pkg/admission/antiaffinity:all-srcs",
         "//plugin/pkg/admission/defaulttolerationseconds:all-srcs",
         "//plugin/pkg/admission/deny:all-srcs",
