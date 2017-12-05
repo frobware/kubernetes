@@ -30,8 +30,9 @@ var (
 	port = flag.Int("port", 80, "Port number.")
 
 	metrics = []metric{
-		{"packets", time.Second, 0},
+		// order is significant; queries must be first.
 		{"queries", time.Second, 0},
+		{"packets", time.Second, 0},
 	}
 )
 
@@ -43,6 +44,13 @@ type metric struct {
 
 func (m metric) String() string {
 	return fmt.Sprintf("%s %v", m.Name, m.Value)
+}
+
+func heartbeat(interval time.Duration) {
+	for {
+		dumpMetrics(metrics)
+		time.Sleep(interval)
+	}
 }
 
 func logRequest(req *http.Request) {
@@ -79,6 +87,8 @@ func updateMetric(value string, m *metric) error {
 }
 
 func serveMetrics(w http.ResponseWriter, req *http.Request) {
+	metrics[0].Value += 1
+
 	logRequest(req)
 
 	w.Header().Set("Content-Type", "text/plain")
@@ -89,6 +99,8 @@ func serveMetrics(w http.ResponseWriter, req *http.Request) {
 }
 
 func serveRoot(w http.ResponseWriter, req *http.Request) {
+	metrics[0].Value += 1
+
 	logRequest(req)
 
 	if req.Method != "POST" {
@@ -115,5 +127,6 @@ func main() {
 	flag.Parse()
 	http.HandleFunc("/metrics", serveMetrics)
 	http.HandleFunc("/", serveRoot)
+	go heartbeat(5 * time.Second)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
