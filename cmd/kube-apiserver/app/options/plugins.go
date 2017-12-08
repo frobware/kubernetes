@@ -27,6 +27,7 @@ import (
 	"k8s.io/apiserver/pkg/admission"
 	"k8s.io/kubernetes/plugin/pkg/admission/admit"
 	"k8s.io/kubernetes/plugin/pkg/admission/alwayspullimages"
+	"k8s.io/kubernetes/plugin/pkg/admission/alwaysqualifyimages"
 	"k8s.io/kubernetes/plugin/pkg/admission/antiaffinity"
 	"k8s.io/kubernetes/plugin/pkg/admission/defaulttolerationseconds"
 	"k8s.io/kubernetes/plugin/pkg/admission/deny"
@@ -58,6 +59,7 @@ import (
 func RegisterAllAdmissionPlugins(plugins *admission.Plugins) {
 	admit.Register(plugins)
 	alwayspullimages.Register(plugins)
+	alwaysqualifyimages.Register(plugins)
 	antiaffinity.Register(plugins)
 	defaulttolerationseconds.Register(plugins)
 	deny.Register(plugins)
