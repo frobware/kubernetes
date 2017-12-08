@@ -18,7 +18,6 @@ package parsers
 
 import (
 	"fmt"
-	"strings"
 	//  Import the crypto sha256 algorithm for the docker image parser to work
 	_ "crypto/sha256"
 	//  Import the crypto/sha512 algorithm for the docker image parser to work with 384 and 512 sha hashes
@@ -56,32 +55,4 @@ func ParseImageName(image string) (string, string, string, error) {
 		tag = DefaultImageTag
 	}
 	return repoToPull, tag, digest, nil
-}
-
-// SplitImageName splits a docker image string into the domain
-// component and path components. An empty string is returned if there
-// is no domain component. This function will first validate that
-// image is a valid reference, returning an error if it is not.
-// Validation is done via without normalising the image.
-//
-// Examples inputs and results for the domain component:
-//
-//   "busybox"                    -> domain is ""
-//   "foo/busybox"                -> domain is ""
-//   "localhost/foo/busybox"      -> domain is "localhost"
-//   "localhost:5000/foo/busybox" -> domain is "localhost:5000"
-//   "gcr.io/busybox"             -> domain is "gcr.io"
-//   "gcr.io/foo/busybox"         -> domain is "gcr.io"
-//   "docker.io/busybox"          -> domain is "docker.io"
-//   "docker.io/library/busybox"  -> domain is "docker.io"
-func SplitImageName(image string) (string, string, error) {
-	if _, err := dockerref.Parse(image); err != nil {
-		return "", "", err
-	}
-	i := strings.IndexRune(image, '/')
-	if i == -1 || (!strings.ContainsAny(image[:i], ".:") && image[:i] != "localhost") {
-		return "", image, nil
-	} else {
-		return image[:i], image[i+1:], nil
-	}
 }
