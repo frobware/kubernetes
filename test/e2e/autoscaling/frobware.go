@@ -22,7 +22,7 @@ import (
 	"k8s.io/kubernetes/test/e2e/framework"
 )
 
-const dummyDriverResource = "http://www.frobware.com/~aim/adapter.yaml"
+const dummyDriverResource = "http://x1c.home/~aim/adapter.yaml"
 
 var _ = SIGDescribe("[DUMMYDRIVER] Horizontal pod autoscaling (scale resource: Custom Metrics from DummyDriver)", func() {
 	f := framework.NewDefaultFramework("horizontal-pod-autoscaling-dummydriver")
