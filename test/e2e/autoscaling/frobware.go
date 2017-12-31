@@ -44,9 +44,9 @@ func testHPAUsingDummyDriver(f *framework.Framework, kubeClient clientset.Interf
 	defer kubectl("delete", dummyDriverResource)
 
 	// Run application that exports the metric
-	err := createDeploymentsToScale(f, kubeClient)
+	err := createDeploymentToScale(f, kubeClient, nil, nil)
 	if err != nil {
 		framework.Failf("Failed to create stackdriver-exporter pod: %v", err)
 	}
-	defer cleanupDeploymentsToScale(f, kubeClient)
+	defer cleanupDeploymentsToScale(f, kubeClient, nil, nil)
 }
